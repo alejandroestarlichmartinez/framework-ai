@@ -1,8 +1,8 @@
 {
   "agent": {
-    "gentle-orchestrator": {
+    "framework-orchestrator": {
       "mode": "primary",
-      "description": "Gentle AI SDD Orchestrator - coordinates sub-agents, never does work inline",
+      "description": "Framework AI SDD Orchestrator - coordinates sub-agents, never does work inline",
       "prompt": "{file:./AGENTS.md}",
       "permission": {
         "task": {
@@ -17,7 +17,9 @@
             "sdd-apply": "allow",
             "sdd-verify": "allow",
             "sdd-archive": "allow",
-            "sdd-onboard": "allow"
+            "sdd-onboard": "allow",
+            "sdd-inspect": "allow",
+            "sdd-optimize": "allow"
           }
         }
       },
@@ -144,6 +146,30 @@
       "hidden": true,
       "description": "Guide user through a complete SDD cycle using their real codebase",
       "prompt": "__PROMPT_FILE_sdd-onboard__",
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "bash": true
+      }
+    },
+    "sdd-inspect": {
+      "mode": "subagent",
+      "hidden": true,
+      "description": "Audit project compliance against AGENTS.md and coding conventions",
+      "prompt": "__PROMPT_FILE_sdd-inspect__",
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "bash": true
+      }
+    },
+    "sdd-optimize": {
+      "mode": "subagent",
+      "hidden": true,
+      "description": "Analyze project or commit for performance optimizations",
+      "prompt": "__PROMPT_FILE_sdd-optimize__",
       "tools": {
         "read": true,
         "write": true,

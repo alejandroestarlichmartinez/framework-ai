@@ -3,7 +3,7 @@ package skills
 import (
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/internal/model"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/model"
 )
 
 func TestSkillsForPresetMinimalReturnsSDDOnly(t *testing.T) {

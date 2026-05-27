@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/internal/assets"
-	"github.com/gentleman-programming/gentle-ai/internal/model"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/assets"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/model"
 )
 
 func TestResolveProfileStrategy_ExplicitWins(t *testing.T) {
@@ -83,6 +83,7 @@ func TestValidateProfileName_Invalid(t *testing.T) {
 		{"", "empty"},
 		{"default", "reserved word"},
 		{"sdd-orchestrator", "reserved word"},
+		{"framework-orchestrator", "reserved word"},
 		{"my profile", "contains space"},
 		{"has spaces", "contains spaces"},
 		{"has_underscores", "slug convention: lowercase + hyphens only"},
@@ -116,6 +117,8 @@ func TestProfileAgentKeys_Named(t *testing.T) {
 		"sdd-verify-cheap",
 		"sdd-archive-cheap",
 		"sdd-onboard-cheap",
+		"sdd-inspect-cheap",
+		"sdd-optimize-cheap",
 	}
 
 	if len(keys) != len(want) {
@@ -138,7 +141,7 @@ func TestProfileAgentKeys_Default(t *testing.T) {
 	keys := ProfileAgentKeys("")
 
 	want := []string{
-		"sdd-orchestrator",
+		"framework-orchestrator",
 		"sdd-init",
 		"sdd-explore",
 		"sdd-propose",
@@ -149,6 +152,8 @@ func TestProfileAgentKeys_Default(t *testing.T) {
 		"sdd-verify",
 		"sdd-archive",
 		"sdd-onboard",
+		"sdd-inspect",
+		"sdd-optimize",
 	}
 
 	if len(keys) != len(want) {
@@ -167,11 +172,11 @@ func TestProfileAgentKeys_Default(t *testing.T) {
 }
 
 func TestProfileAgentKeys_Count(t *testing.T) {
-	if n := len(ProfileAgentKeys("cheap")); n != 11 {
-		t.Errorf("ProfileAgentKeys(\"cheap\") = %d keys, want 11", n)
+	if n := len(ProfileAgentKeys("cheap")); n != 13 {
+		t.Errorf("ProfileAgentKeys(\"cheap\") = %d keys, want 13", n)
 	}
-	if n := len(ProfileAgentKeys("")); n != 11 {
-		t.Errorf("ProfileAgentKeys(\"\") = %d keys, want 11", n)
+	if n := len(ProfileAgentKeys("")); n != 13 {
+		t.Errorf("ProfileAgentKeys(\"\") = %d keys, want 13", n)
 	}
 }
 
@@ -376,9 +381,9 @@ func TestGenerateProfileOverlay_Structure(t *testing.T) {
 		t.Fatal("overlay 'agent' is not an object")
 	}
 
-	// Must have 11 agents
-	if len(agentMap) != 11 {
-		t.Errorf("agent map has %d entries, want 11", len(agentMap))
+	// Must have 13 agents
+	if len(agentMap) != 13 {
+		t.Errorf("agent map has %d entries, want 13", len(agentMap))
 	}
 
 	// Orchestrator checks
@@ -484,7 +489,7 @@ func TestDefaultOverlayTaskPermissions_ExplicitAllowlist(t *testing.T) {
 			}
 
 			agentMap := root["agent"].(map[string]any)
-			orch := agentMap["gentle-orchestrator"].(map[string]any)
+			orch := agentMap["framework-orchestrator"].(map[string]any)
 			permission := orch["permission"].(map[string]any)
 			taskWrapper := permission["task"].(map[string]any)
 
@@ -612,19 +617,21 @@ func buildSettingsWithProfiles(t *testing.T) (path string) {
 	dir := t.TempDir()
 	settingsPath := filepath.Join(dir, "opencode.json")
 
-	// Build JSON with default (11 keys) + cheap (11 keys) = 22 total
+	// Build JSON with default (13 keys) + cheap (13 keys) = 26 total
 	agents := make(map[string]any)
 
 	// Default agents (no suffix)
-	for _, key := range []string{"sdd-orchestrator", "sdd-init", "sdd-explore",
+	for _, key := range []string{"framework-orchestrator", "sdd-init", "sdd-explore",
 		"sdd-propose", "sdd-spec", "sdd-design", "sdd-tasks",
-		"sdd-apply", "sdd-verify", "sdd-archive", "sdd-onboard"} {
+		"sdd-apply", "sdd-verify", "sdd-archive", "sdd-onboard",
+		"sdd-inspect", "sdd-optimize"} {
 		agents[key] = map[string]any{"mode": "primary"}
 	}
 	// cheap profile
 	for _, key := range []string{"sdd-orchestrator-cheap", "sdd-init-cheap", "sdd-explore-cheap",
 		"sdd-propose-cheap", "sdd-spec-cheap", "sdd-design-cheap", "sdd-tasks-cheap",
-		"sdd-apply-cheap", "sdd-verify-cheap", "sdd-archive-cheap", "sdd-onboard-cheap"} {
+		"sdd-apply-cheap", "sdd-verify-cheap", "sdd-archive-cheap", "sdd-onboard-cheap",
+		"sdd-inspect-cheap", "sdd-optimize-cheap"} {
 		agents[key] = map[string]any{"mode": "subagent"}
 	}
 
@@ -655,9 +662,9 @@ func TestRemoveProfileAgents_RemovesExactly11(t *testing.T) {
 
 	agentMap := root["agent"].(map[string]any)
 
-	// 11 default keys should remain
-	if len(agentMap) != 11 {
-		t.Errorf("after RemoveProfileAgents, agent count = %d, want 11; keys: %v", len(agentMap), keysOf(agentMap))
+	// 13 default keys should remain
+	if len(agentMap) != 13 {
+		t.Errorf("after RemoveProfileAgents, agent count = %d, want 13; keys: %v", len(agentMap), keysOf(agentMap))
 	}
 
 	// No cheap keys remain
@@ -668,7 +675,7 @@ func TestRemoveProfileAgents_RemovesExactly11(t *testing.T) {
 	}
 
 	// Default keys all preserved
-	for _, key := range []string{"sdd-orchestrator", "sdd-init", "sdd-explore",
+	for _, key := range []string{"framework-orchestrator", "sdd-init", "sdd-explore",
 		"sdd-propose", "sdd-spec", "sdd-design", "sdd-tasks",
 		"sdd-apply", "sdd-verify", "sdd-archive", "sdd-onboard"} {
 		if _, ok := agentMap[key]; !ok {

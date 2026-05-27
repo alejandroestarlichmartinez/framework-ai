@@ -32,9 +32,9 @@ func TestRemoveMarkdownSections_RemovesOnlyManagedBlock(t *testing.T) {
 		"",
 		"Keep this.",
 		"",
-		"<!-- gentle-ai:engram-protocol -->",
+		"<!-- framework-ai:engram-protocol -->",
 		"Managed content.",
-		"<!-- /gentle-ai:engram-protocol -->",
+		"<!-- /framework-ai:engram-protocol -->",
 		"",
 		"# User Footer",
 		"",
@@ -45,7 +45,7 @@ func TestRemoveMarkdownSections_RemovesOnlyManagedBlock(t *testing.T) {
 	if !changed {
 		t.Fatal("removeMarkdownSections() changed = false, want true")
 	}
-	if strings.Contains(updated, "gentle-ai:engram-protocol") {
+	if strings.Contains(updated, "framework-ai:engram-protocol") {
 		t.Fatalf("managed marker block still present:\n%s", updated)
 	}
 	if !strings.Contains(updated, "# User Intro") || !strings.Contains(updated, "# User Footer") {
@@ -67,9 +67,9 @@ func TestRemoveManagedPersonaPreamble_PreservesManagedSuffix(t *testing.T) {
 		"## Rules",
 		"Be direct.",
 		"",
-		"<!-- gentle-ai:sdd-orchestrator -->",
+		"<!-- framework-ai:framework-orchestrator -->",
 		"SDD stays.",
-		"<!-- /gentle-ai:sdd-orchestrator -->",
+		"<!-- /framework-ai:framework-orchestrator -->",
 	}, "\n") + "\n"
 
 	updated, changed := removeManagedPersonaPreamble(input)
@@ -79,7 +79,7 @@ func TestRemoveManagedPersonaPreamble_PreservesManagedSuffix(t *testing.T) {
 	if strings.Contains(updated, "name: Gentle AI Persona") || strings.Contains(updated, "## Personality") {
 		t.Fatalf("managed persona preamble still present:\n%s", updated)
 	}
-	if !strings.HasPrefix(updated, "<!-- gentle-ai:sdd-orchestrator -->") {
+	if !strings.HasPrefix(updated, "<!-- framework-ai:framework-orchestrator -->") {
 		t.Fatalf("managed suffix was not preserved at file start:\n%s", updated)
 	}
 }
@@ -348,9 +348,9 @@ func TestMarkdownCleanup_OnRealFileWithTempDir(t *testing.T) {
 		"",
 		"Hand-written intro.",
 		"",
-		"<!-- gentle-ai:engram-protocol -->",
+		"<!-- framework-ai:engram-protocol -->",
 		"Managed content.",
-		"<!-- /gentle-ai:engram-protocol -->",
+		"<!-- /framework-ai:engram-protocol -->",
 		"",
 		"# Footer",
 	}, "\n") + "\n"
@@ -375,7 +375,7 @@ func TestMarkdownCleanup_OnRealFileWithTempDir(t *testing.T) {
 		t.Fatalf("ReadFile(final) error = %v", err)
 	}
 	final := string(finalRaw)
-	if strings.Contains(final, "gentle-ai:engram-protocol") {
+	if strings.Contains(final, "framework-ai:engram-protocol") {
 		t.Fatalf("managed markdown block still present in file:\n%s", final)
 	}
 	if !strings.Contains(final, "Hand-written intro.") || !strings.Contains(final, "# Footer") {
@@ -438,5 +438,39 @@ func TestJSONCleanup_OnRealFileWithTempDir(t *testing.T) {
 	}
 	if _, exists := mcpServers["custom"]; !exists {
 		t.Fatalf("custom server should remain in file JSON: %#v", mcpServers)
+	}
+}
+
+func TestCleanCodegraphTOML_RemovesOnlyCodegraphBlock(t *testing.T) {
+	input := strings.Join([]string{
+		"custom_top = \"keep\"",
+		"",
+		"[mcp_servers.codegraph]",
+		"command = \"codegraph\"",
+		"args = [\"serve\", \"--mcp\"]",
+		"",
+		"[mcp_servers.engram]",
+		"command = \"engram\"",
+		"args = [\"mcp\", \"--tools=agent\"]",
+		"",
+		"[other]",
+		"value = \"keep\"",
+	}, "\n") + "\n"
+
+	updated, changed := cleanCodegraphTOML(input)
+	if !changed {
+		t.Fatal("cleanCodegraphTOML() changed = false, want true")
+	}
+	if strings.Contains(updated, "[mcp_servers.codegraph]") {
+		t.Fatalf("codegraph block should be removed: %q", updated)
+	}
+	if !strings.Contains(updated, "custom_top = \"keep\"") {
+		t.Fatalf("top-level user content lost: %q", updated)
+	}
+	if !strings.Contains(updated, "[mcp_servers.engram]") {
+		t.Fatalf("engram block should be preserved: %q", updated)
+	}
+	if !strings.Contains(updated, "[other]\nvalue = \"keep\"") {
+		t.Fatalf("table content lost: %q", updated)
 	}
 }

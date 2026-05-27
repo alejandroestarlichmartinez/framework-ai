@@ -10,19 +10,19 @@ import (
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/gentleman-programming/gentle-ai/internal/backup"
-	"github.com/gentleman-programming/gentle-ai/internal/cli"
-	componentuninstall "github.com/gentleman-programming/gentle-ai/internal/components/uninstall"
-	"github.com/gentleman-programming/gentle-ai/internal/model"
-	"github.com/gentleman-programming/gentle-ai/internal/pipeline"
-	"github.com/gentleman-programming/gentle-ai/internal/planner"
-	"github.com/gentleman-programming/gentle-ai/internal/skillregistry"
-	"github.com/gentleman-programming/gentle-ai/internal/state"
-	"github.com/gentleman-programming/gentle-ai/internal/system"
-	"github.com/gentleman-programming/gentle-ai/internal/tui"
-	"github.com/gentleman-programming/gentle-ai/internal/update"
-	"github.com/gentleman-programming/gentle-ai/internal/update/upgrade"
-	"github.com/gentleman-programming/gentle-ai/internal/verify"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/backup"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/cli"
+	componentuninstall "github.com/alejandroestarlichmartinez/framework-ai/internal/components/uninstall"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/model"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/pipeline"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/planner"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/skillregistry"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/state"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/system"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/tui"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/update"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/update/upgrade"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/verify"
 )
 
 // Version is set from main via ldflags at build time.
@@ -43,7 +43,7 @@ func Run() error {
 
 func RunArgs(args []string, stdout io.Writer) error {
 	// Propagate the build-time version to the CLI and upgrade layers so backup
-	// manifests record which version of gentle-ai created them.
+	// manifests record which version of framework-ai created them.
 	cli.AppVersion = Version
 	upgrade.AppVersion = Version
 
@@ -51,7 +51,7 @@ func RunArgs(args []string, stdout io.Writer) error {
 	if len(args) > 0 {
 		switch args[0] {
 		case "version", "--version", "-v":
-			_, _ = fmt.Fprintf(stdout, "gentle-ai %s\n", Version)
+			_, _ = fmt.Fprintf(stdout, "framework-ai %s\n", Version)
 			return nil
 		case "help", "--help", "-h":
 			printHelp(stdout, Version)
@@ -89,7 +89,7 @@ func RunArgs(args []string, stdout io.Writer) error {
 		return profile
 	}
 
-	// Self-update: check for a newer gentle-ai release and apply it before
+	// Self-update: check for a newer framework-ai release and apply it before
 	// CLI/TUI dispatch. Errors are non-fatal — logged and swallowed.
 	if !isExplicitUpdateFlow(args) {
 		if err := selfUpdateFn(context.Background(), Version, resolveProfile(), stdout); err != nil {
@@ -169,13 +169,13 @@ func RunArgs(args []string, stdout io.Writer) error {
 	case "restore":
 		return cli.RunRestore(args[1:], stdout)
 	default:
-		return fmt.Errorf("unknown command %q — run 'gentle-ai help' for available commands", args[0])
+		return fmt.Errorf("unknown command %q — run 'framework-ai help' for available commands", args[0])
 	}
 }
 
 func runSkillRegistry(args []string, stdout io.Writer) error {
 	if len(args) == 0 || args[0] != "refresh" {
-		return fmt.Errorf("usage: gentle-ai skill-registry refresh [--cwd <dir>] [--force] [--quiet] [--no-gitignore]")
+		return fmt.Errorf("usage: framework-ai skill-registry refresh [--cwd <dir>] [--force] [--quiet] [--no-gitignore]")
 	}
 
 	cwd := ""
@@ -236,13 +236,13 @@ func runUpdate(ctx context.Context, currentVersion string, profile system.Platfo
 	return updateCheckError(results)
 }
 
-// runUpgrade handles the `gentle-ai upgrade [--dry-run] [tool...]` command.
+// runUpgrade handles the `framework-ai upgrade [--dry-run] [tool...]` command.
 //
 // This command:
-//   - Checks for available updates for managed tools (gentle-ai, engram, gga)
+//   - Checks for available updates for managed tools (framework-ai, engram, gga)
 //   - Snapshots agent config paths before execution (config preservation by design)
 //   - Executes binary-only upgrades; does NOT invoke install or sync pipelines
-//   - Skips gentle-ai itself when running as a dev build (version="dev")
+//   - Skips framework-ai itself when running as a dev build (version="dev")
 //   - Falls back to manual guidance for unsafe platforms (Windows binary self-replace)
 func runUpgrade(ctx context.Context, args []string, detection system.DetectionResult, stdout io.Writer) error {
 	dryRun := false
@@ -574,7 +574,7 @@ func ListBackups() []backup.Manifest {
 		return nil
 	}
 
-	backupRoot := filepath.Join(homeDir, ".gentle-ai", "backups")
+	backupRoot := filepath.Join(homeDir, ".framework-ai", "backups")
 	entries, err := os.ReadDir(backupRoot)
 	if err != nil {
 		return nil

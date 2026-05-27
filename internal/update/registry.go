@@ -11,12 +11,12 @@ package update
 // field here; InstallMethod represents the non-brew fallback strategy.
 var Tools = []ToolInfo{
 	{
-		Name:          "gentle-ai",
+		Name:          "framework-ai",
 		Owner:         "Gentleman-Programming",
-		Repo:          "gentle-ai",
+		Repo:          "framework-ai",
 		DetectCmd:     nil, // version comes from build-time ldflags (app.Version)
 		VersionPrefix: "v",
-		// gentle-ai: brew on macOS, binary release download on Linux/Windows.
+		// framework-ai: brew on macOS, binary release download on Linux/Windows.
 		// Self-upgrade of the running binary on Windows is deferred to Phase 2.
 		InstallMethod: InstallBinary,
 	},

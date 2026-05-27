@@ -8,9 +8,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/gentleman-programming/gentle-ai/internal/model"
-	"github.com/gentleman-programming/gentle-ai/internal/system"
-	"github.com/gentleman-programming/gentle-ai/internal/versions"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/model"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/system"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/versions"
 )
 
 // cmdLookPath, osStat, osGetenv, and cmdGoVersion are package-level vars for testability.
@@ -153,6 +153,8 @@ func (profileResolver) ResolveComponentInstall(profile system.PlatformProfile, c
 		return resolveEngramInstall(profile)
 	case model.ComponentGGA:
 		return resolveGGAInstall(profile)
+	case model.ComponentCodeGraph:
+		return resolveCodeGraphInstall(profile), nil
 	default:
 		return nil, fmt.Errorf("install command is not supported for component %q", component)
 	}
@@ -247,6 +249,11 @@ func resolveGGAInstall(profile system.PlatformProfile) (CommandSequence, error) 
 			profile.OS, profile.LinuxDistro, profile.PackageManager,
 		)
 	}
+}
+
+func resolveCodeGraphInstall(profile system.PlatformProfile) CommandSequence {
+	return CommandSequence{{"sh", "-c",
+		"curl -fsSL https://raw.githubusercontent.com/colbymchenry/codegraph/main/install.sh | sh"}}
 }
 
 func bashScriptPath(profile system.PlatformProfile, path string) string {

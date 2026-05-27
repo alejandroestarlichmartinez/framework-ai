@@ -2,22 +2,22 @@
 set -euo pipefail
 
 # ============================================================================
-# Gentle-AI — Install Script
+# Framework-AI — Install Script
 # Ecosystem, Frameworks, Workflows for AI coding agents.
 #
 # Usage:
-#   curl -sL https://raw.githubusercontent.com/Gentleman-Programming/gentle-ai/main/scripts/install.sh | bash
+#   curl -sL https://raw.githubusercontent.com/alejandroestarlichmartinez/framework-ai/main/scripts/install.sh | bash
 #
 # Or download and run:
-#   curl -sLO https://raw.githubusercontent.com/Gentleman-Programming/gentle-ai/main/scripts/install.sh
+#   curl -sLO https://raw.githubusercontent.com/alejandroestarlichmartinez/framework-ai/main/scripts/install.sh
 #   chmod +x install.sh
 #   ./install.sh
 # ============================================================================
 
-GITHUB_OWNER="Gentleman-Programming"
-GITHUB_REPO="gentle-ai"
-BINARY_NAME="gentle-ai"
-BREW_TAP="Gentleman-Programming/homebrew-tap"
+GITHUB_OWNER="alejandroestarlichmartinez"
+GITHUB_REPO="framework-ai"
+BINARY_NAME="framework-ai"
+BREW_TAP="alejandroestarlichmartinez/homebrew-tap"
 
 # ============================================================================
 # Color support
@@ -113,8 +113,8 @@ detect_platform() {
 # GoReleaser v2 {{ .Os }} produces GOOS values (lowercase: darwin, linux)
 # GoReleaser {{ .Arch }} produces GOARCH values (amd64, arm64)
 # Examples:
-#   gentle-ai_1.0.0_darwin_arm64.tar.gz
-#   gentle-ai_1.0.0_linux_amd64.tar.gz
+#   framework-ai_1.0.0_darwin_arm64.tar.gz
+#   framework-ai_1.0.0_linux_amd64.tar.gz
 # ============================================================================
 
 get_archive_name() {
@@ -442,7 +442,7 @@ print_banner() {
     echo " | |_| |  __/ | | | |_| |  __/_____/ ___ \ | | "
     echo "  \____|\___|_| |_|\__|_|\___|    /_/   \_\___|"
     echo -e "${NC}"
-    echo -e "  ${DIM}Gentle-AI — Ecosystem, Frameworks, Workflows${NC}"
+    echo -e "  ${DIM}Framework-AI — Ecosystem, Frameworks, Workflows${NC}"
     echo ""
 }
 

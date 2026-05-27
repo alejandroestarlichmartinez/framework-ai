@@ -16,8 +16,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gentleman-programming/gentle-ai/internal/system"
-	"github.com/gentleman-programming/gentle-ai/internal/update"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/system"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/update"
 )
 
 // httpClient is the HTTP client used for asset downloads.
@@ -61,7 +61,7 @@ func Download(ctx context.Context, r update.UpdateResult, profile system.Platfor
 	checksumURL := resolveChecksumURLFn(r.Tool.Owner, r.Tool.Repo, r.LatestVersion)
 
 	// Download archive to a temp directory so we can verify before extracting.
-	tmpDir, err := os.MkdirTemp("", "gentle-ai-upgrade-*")
+	tmpDir, err := os.MkdirTemp("", "framework-ai-upgrade-*")
 	if err != nil {
 		return fmt.Errorf("create temp dir: %w", err)
 	}

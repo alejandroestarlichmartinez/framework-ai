@@ -14,7 +14,8 @@ func TestAllEmbeddedAssetsAreReadable(t *testing.T) {
 		// Claude agent files
 		"claude/engram-protocol.md",
 		"claude/persona-gentleman.md",
-		"claude/sdd-orchestrator.md",
+		"claude/persona-rick-sanchez.md",
+		"claude/framework-orchestrator.md",
 		"claude/commands/sdd-apply.md",
 		"claude/commands/sdd-archive.md",
 		"claude/commands/sdd-continue.md",
@@ -24,10 +25,13 @@ func TestAllEmbeddedAssetsAreReadable(t *testing.T) {
 		"claude/commands/sdd-new.md",
 		"claude/commands/sdd-onboard.md",
 		"claude/commands/sdd-verify.md",
+		"claude/commands/sdd-inspect.md",
+		"claude/commands/sdd-optimize.md",
 
 		// OpenCode agent files
 		"opencode/persona-gentleman.md",
-		"opencode/sdd-orchestrator.md",
+		"opencode/persona-rick-sanchez.md",
+		"opencode/framework-orchestrator.md",
 		"opencode/sdd-overlay-single.json",
 		"opencode/sdd-overlay-multi.json",
 		"opencode/commands/sdd-apply.md",
@@ -39,16 +43,18 @@ func TestAllEmbeddedAssetsAreReadable(t *testing.T) {
 		"opencode/commands/sdd-new.md",
 		"opencode/commands/sdd-onboard.md",
 		"opencode/commands/sdd-verify.md",
+		"opencode/commands/sdd-inspect.md",
+		"opencode/commands/sdd-optimize.md",
 		"opencode/plugins/background-agents.ts",
 
 		// Gemini agent files
-		"gemini/sdd-orchestrator.md",
+		"gemini/framework-orchestrator.md",
 
 		// Codex agent files
-		"codex/sdd-orchestrator.md",
+		"codex/framework-orchestrator.md",
 
 		// Cursor agent files
-		"cursor/sdd-orchestrator.md",
+		"cursor/framework-orchestrator.md",
 		"cursor/agents/sdd-init.md",
 		"cursor/agents/sdd-explore.md",
 		"cursor/agents/sdd-propose.md",
@@ -61,8 +67,9 @@ func TestAllEmbeddedAssetsAreReadable(t *testing.T) {
 
 		// Kimi agent files
 		"kimi/persona-gentleman.md",
+		"kimi/persona-rick-sanchez.md",
 		"kimi/output-style-gentleman.md",
-		"kimi/sdd-orchestrator.md",
+		"kimi/framework-orchestrator.md",
 		"kimi/KIMI.md",
 		"kimi/agents/gentleman.yaml",
 		"kimi/agents/sdd-init.yaml",
@@ -98,6 +105,8 @@ func TestAllEmbeddedAssetsAreReadable(t *testing.T) {
 		"skills/sdd-tasks/SKILL.md",
 		"skills/sdd-verify/SKILL.md",
 		"skills/sdd-verify/references/report-format.md",
+		"skills/sdd-inspect/SKILL.md",
+		"skills/sdd-optimize/SKILL.md",
 		"skills/skill-registry/SKILL.md",
 		"skills/judgment-day/references/prompts-and-formats.md",
 		"skills/_shared/persistence-contract.md",
@@ -143,7 +152,7 @@ func TestOpenCodeEmbeddedAssetLayout(t *testing.T) {
 		seen[entry.Name()] = true
 	}
 
-	for _, name := range []string{"commands", "plugins", "persona-gentleman.md", "sdd-orchestrator.md", "sdd-overlay-single.json", "sdd-overlay-multi.json"} {
+	for _, name := range []string{"commands", "plugins", "persona-gentleman.md", "framework-orchestrator.md", "sdd-overlay-single.json", "sdd-overlay-multi.json"} {
 		if !seen[name] {
 			t.Fatalf("opencode embedded assets missing %q", name)
 		}
@@ -153,8 +162,8 @@ func TestOpenCodeEmbeddedAssetLayout(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ReadDir(opencode/commands) error = %v", err)
 	}
-	if len(commandEntries) != 9 {
-		t.Fatalf("opencode commands count = %d, want 9", len(commandEntries))
+	if len(commandEntries) != 11 {
+		t.Fatalf("opencode commands count = %d, want 11", len(commandEntries))
 	}
 
 	pluginEntries, err := FS.ReadDir("opencode/plugins")
@@ -222,7 +231,7 @@ func TestClaudeEmbeddedAssetLayout(t *testing.T) {
 		seen[entry.Name()] = true
 	}
 
-	for _, name := range []string{"commands", "engram-protocol.md", "persona-gentleman.md", "sdd-orchestrator.md"} {
+	for _, name := range []string{"commands", "engram-protocol.md", "persona-gentleman.md", "framework-orchestrator.md"} {
 		if !seen[name] {
 			t.Fatalf("claude embedded assets missing %q", name)
 		}
@@ -232,13 +241,13 @@ func TestClaudeEmbeddedAssetLayout(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ReadDir(claude/commands) error = %v", err)
 	}
-	if len(commandEntries) != 9 {
-		t.Fatalf("claude commands count = %d, want 9", len(commandEntries))
+	if len(commandEntries) != 11 {
+		t.Fatalf("claude commands count = %d, want 11", len(commandEntries))
 	}
 }
 
 func TestOpenCodeSDDOrchestratorRequiresSessionPreflight(t *testing.T) {
-	content := MustRead("opencode/sdd-orchestrator.md")
+	content := MustRead("opencode/framework-orchestrator.md")
 
 	for _, required := range []string{
 		"### SDD Session Preflight (HARD GATE)",
@@ -264,20 +273,20 @@ func TestOpenCodeSDDOrchestratorRequiresSessionPreflight(t *testing.T) {
 		"Ask before launching the next phase",
 	} {
 		if !strings.Contains(content, required) {
-			t.Fatalf("opencode/sdd-orchestrator.md missing required preflight wording %q", required)
+			t.Fatalf("opencode/framework-orchestrator.md missing required preflight wording %q", required)
 		}
 	}
 }
 
 func TestOpenCodeSDDOrchestratorSpanishPreflightIsLocalized(t *testing.T) {
-	content := MustRead("opencode/sdd-orchestrator.md")
+	content := MustRead("opencode/framework-orchestrator.md")
 	start := strings.Index(content, "Antes de continuar con SDD")
 	if start < 0 {
-		t.Fatal("opencode/sdd-orchestrator.md missing Spanish preflight block")
+		t.Fatal("opencode/framework-orchestrator.md missing Spanish preflight block")
 	}
 	end := strings.Index(content[start:], "Map answers to canonical values")
 	if end < 0 {
-		t.Fatal("opencode/sdd-orchestrator.md missing end of Spanish preflight block")
+		t.Fatal("opencode/framework-orchestrator.md missing end of Spanish preflight block")
 	}
 	spanishBlock := content[start : start+end]
 
@@ -345,7 +354,7 @@ func TestOpenCodeSDDCommandsAreOrchestratorGuarded(t *testing.T) {
 
 	applyContent := MustRead("opencode/commands/sdd-apply.md")
 	for _, required := range []string{
-		"You are the `gentle-orchestrator`, not an SDD executor",
+		"You are the `framework-orchestrator`, not an SDD executor",
 		"If spec, design, or tasks are missing, do NOT implement",
 		"do not hardcode Engram",
 	} {
@@ -356,7 +365,7 @@ func TestOpenCodeSDDCommandsAreOrchestratorGuarded(t *testing.T) {
 }
 
 func TestClaudeSDDOrchestratorChainStrategy(t *testing.T) {
-	content := MustRead("claude/sdd-orchestrator.md")
+	content := MustRead("claude/framework-orchestrator.md")
 
 	for _, required := range []string{
 		"### Chain Strategy",
@@ -368,7 +377,7 @@ func TestClaudeSDDOrchestratorChainStrategy(t *testing.T) {
 		"results are not persisted by OpenCode's background-agent plugin",
 	} {
 		if !strings.Contains(content, required) {
-			t.Fatalf("claude/sdd-orchestrator.md missing required SDD chain/delegation wording %q", required)
+			t.Fatalf("claude/framework-orchestrator.md missing required SDD chain/delegation wording %q", required)
 		}
 	}
 
@@ -378,7 +387,7 @@ func TestClaudeSDDOrchestratorChainStrategy(t *testing.T) {
 		"OpenCode plugin-backed persistence guarantees",
 	} {
 		if strings.Contains(content, forbidden) {
-			t.Fatalf("claude/sdd-orchestrator.md must not imply OpenCode persisted delegation semantics via %q", forbidden)
+			t.Fatalf("claude/framework-orchestrator.md must not imply OpenCode persisted delegation semantics via %q", forbidden)
 		}
 	}
 }
@@ -388,14 +397,14 @@ func TestNonClaudeSDDOrchestratorChainStrategyParity(t *testing.T) {
 		path             string
 		propagationScope string
 	}{
-		{path: "codex/sdd-orchestrator.md", propagationScope: "prompt"},
-		{path: "gemini/sdd-orchestrator.md", propagationScope: "prompt"},
-		{path: "qwen/sdd-orchestrator.md", propagationScope: "prompt"},
-		{path: "generic/sdd-orchestrator.md", propagationScope: "prompt"},
-		{path: "kimi/sdd-orchestrator.md", propagationScope: "Kimi custom-agent prompt"},
-		{path: "kiro/sdd-orchestrator.md", propagationScope: "Kiro phase context"},
-		{path: "windsurf/sdd-orchestrator.md", propagationScope: "inline phase context"},
-		{path: "antigravity/sdd-orchestrator.md", propagationScope: "inline phase context"},
+		{path: "codex/framework-orchestrator.md", propagationScope: "prompt"},
+		{path: "gemini/framework-orchestrator.md", propagationScope: "prompt"},
+		{path: "qwen/framework-orchestrator.md", propagationScope: "prompt"},
+		{path: "generic/framework-orchestrator.md", propagationScope: "prompt"},
+		{path: "kimi/framework-orchestrator.md", propagationScope: "Kimi custom-agent prompt"},
+		{path: "kiro/framework-orchestrator.md", propagationScope: "Kiro phase context"},
+		{path: "windsurf/framework-orchestrator.md", propagationScope: "inline phase context"},
+		{path: "antigravity/framework-orchestrator.md", propagationScope: "inline phase context"},
 	}
 
 	for _, tc := range tests {
@@ -425,10 +434,10 @@ func TestPlatformNativeSDDOrchestratorsAvoidOpenCodePersistenceClaims(t *testing
 		path     string
 		required []string
 	}{
-		{path: "kimi/sdd-orchestrator.md", required: []string{"/skill:sdd-*", "multiagent:Task", "custom-agent prompt"}},
-		{path: "kiro/sdd-orchestrator.md", required: []string{"Kiro phase context", "native Kiro subagent context", "approval"}},
-		{path: "windsurf/sdd-orchestrator.md", required: []string{"solo-agent", "inline phase context", "There are no sub-agents"}},
-		{path: "antigravity/sdd-orchestrator.md", required: []string{"inline phase context", "Phase Execution Protocol", "directly"}},
+		{path: "kimi/framework-orchestrator.md", required: []string{"/skill:sdd-*", "multiagent:Task", "custom-agent prompt"}},
+		{path: "kiro/framework-orchestrator.md", required: []string{"Kiro phase context", "native Kiro subagent context", "approval"}},
+		{path: "windsurf/framework-orchestrator.md", required: []string{"solo-agent", "inline phase context", "There are no sub-agents"}},
+		{path: "antigravity/framework-orchestrator.md", required: []string{"inline phase context", "Phase Execution Protocol", "directly"}},
 	}
 
 	for _, tc := range tests {
@@ -460,9 +469,13 @@ func TestGentlemanLanguageInstructionsDoNotBiasEnglishSessions(t *testing.T) {
 	personaPaths := []string{
 		"claude/persona-gentleman.md",
 		"generic/persona-gentleman.md",
+		"generic/persona-rick-sanchez.md",
 		"kiro/persona-gentleman.md",
+		"kiro/persona-rick-sanchez.md",
 		"kimi/persona-gentleman.md",
+		"kimi/persona-rick-sanchez.md",
 		"opencode/persona-gentleman.md",
+		"opencode/persona-rick-sanchez.md",
 	}
 
 	for _, path := range personaPaths {
@@ -560,11 +573,16 @@ func TestPersonasContainContextualSkillLoadingDirective(t *testing.T) {
 		invokeMsg string // wording specific to the agent family
 	}{
 		{path: "claude/persona-gentleman.md", isClaude: true, invokeMsg: "invoke it via the built-in `Skill` tool"},
+		{path: "claude/persona-rick-sanchez.md", isClaude: true, invokeMsg: "invoke it via the built-in `Skill` tool"},
 		{path: "opencode/persona-gentleman.md", isClaude: false, invokeMsg: "read the matching SKILL.md"},
+		{path: "opencode/persona-rick-sanchez.md", isClaude: false, invokeMsg: "read the matching SKILL.md"},
 		{path: "generic/persona-gentleman.md", isClaude: false, invokeMsg: "read the matching SKILL.md"},
 		{path: "generic/persona-neutral.md", isClaude: false, invokeMsg: "read the matching SKILL.md"},
+		{path: "generic/persona-rick-sanchez.md", isClaude: false, invokeMsg: "read the matching SKILL.md"},
 		{path: "kiro/persona-gentleman.md", isClaude: false, invokeMsg: "read the matching SKILL.md"},
+		{path: "kiro/persona-rick-sanchez.md", isClaude: false, invokeMsg: "read the matching SKILL.md"},
 		{path: "kimi/persona-gentleman.md", isClaude: false, invokeMsg: "read the matching SKILL.md"},
+		{path: "kimi/persona-rick-sanchez.md", isClaude: false, invokeMsg: "read the matching SKILL.md"},
 	}
 
 	for _, tc := range tests {
@@ -640,9 +658,9 @@ func TestEmbeddedAssetCount(t *testing.T) {
 		}
 	}
 
-	// We expect 22 skill directories (10 SDD + judgment-day + 6 foundation + 4 sustainable-review + _shared).
-	if skillDirs != 22 {
-		t.Fatalf("expected 22 skill directories, got %d", skillDirs)
+	// We expect 24 skill directories (12 SDD + judgment-day + 6 foundation + 4 sustainable-review + _shared).
+	if skillDirs != 24 {
+		t.Fatalf("expected 24 skill directories, got %d", skillDirs)
 	}
 
 	// Verify each skill directory has a SKILL.md.
@@ -768,21 +786,21 @@ func TestCommandsDoNotUseEchoNPwd(t *testing.T) {
 
 func TestSDDOrchestratorAssetsScopedToDedicatedAgent(t *testing.T) {
 	for _, assetPath := range []string{
-		"generic/sdd-orchestrator.md",
-		"claude/sdd-orchestrator.md",
-		"opencode/sdd-orchestrator.md",
-		"gemini/sdd-orchestrator.md",
-		"codex/sdd-orchestrator.md",
-		"cursor/sdd-orchestrator.md",
-		"kimi/sdd-orchestrator.md",
+		"generic/framework-orchestrator.md",
+		"claude/framework-orchestrator.md",
+		"opencode/framework-orchestrator.md",
+		"gemini/framework-orchestrator.md",
+		"codex/framework-orchestrator.md",
+		"cursor/framework-orchestrator.md",
+		"kimi/framework-orchestrator.md",
 	} {
 		t.Run(assetPath, func(t *testing.T) {
 			content := MustRead(assetPath)
 			dedicatedAgent := "sdd-orchestrator"
-			if assetPath == "opencode/sdd-orchestrator.md" {
-				dedicatedAgent = "gentle-orchestrator"
+			if assetPath == "opencode/framework-orchestrator.md" {
+				dedicatedAgent = "framework-orchestrator"
 			}
-			if assetPath == "claude/sdd-orchestrator.md" {
+			if assetPath == "claude/framework-orchestrator.md" {
 				if !strings.Contains(content, "Claude Code orchestrator rule") {
 					t.Fatalf("%q missing Claude rule scoping note", assetPath)
 				}

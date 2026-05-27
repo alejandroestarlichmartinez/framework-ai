@@ -4,7 +4,7 @@ description: Gentleman persona with SDD orchestration and Engram protocol
 applyTo: "**"
 ---
 
-<!-- gentle-ai:sdd-orchestrator -->
+<!-- framework-ai:framework-orchestrator -->
 # Agent Teams Lite — Orchestrator Instructions
 
 Bind this to the dedicated `sdd-orchestrator` agent or rule only. Do NOT apply it to executor phase agents such as `sdd-apply` or `sdd-verify`.
@@ -165,7 +165,7 @@ Do this even in Automatic mode. Automatic mode does not override reviewer burnou
 
 When launching `sdd-apply`, include the resolved `delivery_strategy`, `chain_strategy`, and any chosen PR boundary/exception in the prompt.
 
-<!-- gentle-ai:sdd-model-assignments -->
+<!-- framework-ai:sdd-model-assignments -->
 ## Model Assignments
 
 Read this table at session start (or before first delegation), cache it for the session, and pass the mapped alias in every Agent tool call via the `model` parameter. If a phase is missing, use the `default` row. If you lack access to the assigned model, substitute `sonnet` and continue.
@@ -183,7 +183,7 @@ Read this table at session start (or before first delegation), cache it for the 
 | sdd-archive | haiku | Copy and close |
 | default | sonnet | Non-SDD general delegation |
 
-<!-- /gentle-ai:sdd-model-assignments -->
+<!-- /framework-ai:sdd-model-assignments -->
 
 ### Sub-Agent Launch Pattern
 
@@ -290,4 +290,4 @@ Convention files under the agent's global skills directory (global) or `.agent/s
 - `engram` → `mem_search(...)` → `mem_get_observation(...)`
 - `openspec` → read `openspec/changes/*/state.yaml`
 - `none` → state not persisted — explain to user
-<!-- /gentle-ai:sdd-orchestrator -->
+<!-- /framework-ai:framework-orchestrator -->

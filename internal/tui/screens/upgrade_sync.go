@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gentleman-programming/gentle-ai/internal/tui/styles"
-	"github.com/gentleman-programming/gentle-ai/internal/update"
-	"github.com/gentleman-programming/gentle-ai/internal/update/upgrade"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/tui/styles"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/update"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/update/upgrade"
 )
 
 // RenderUpgradeSync handles all states of the combined upgrade+sync screen.
@@ -75,7 +75,7 @@ func renderUpgradeSyncConfirm(results []update.UpdateResult, updateCheckDone boo
 
 	b.WriteString("  " + styles.WarningStyle.Render("1.") + " " + styles.HeadingStyle.Render("Upgrade tools"))
 	b.WriteString("\n")
-	b.WriteString("     " + styles.SubtextStyle.Render("Updates gentle-ai, engram, and gga to latest versions"))
+	b.WriteString("     " + styles.SubtextStyle.Render("Updates framework-ai, engram, and gga to latest versions"))
 	b.WriteString("\n\n")
 
 	b.WriteString("  " + styles.WarningStyle.Render("2.") + " " + styles.HeadingStyle.Render("Sync configurations"))

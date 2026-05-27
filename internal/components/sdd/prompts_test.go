@@ -16,9 +16,9 @@ func TestSharedPromptDir(t *testing.T) {
 	}
 }
 
-// TestWriteSharedPromptFilesCreates10Files verifies that WriteSharedPromptFiles
-// creates exactly the 10 expected prompt files under {homeDir}/.config/opencode/prompts/sdd/.
-func TestWriteSharedPromptFilesCreates10Files(t *testing.T) {
+// TestWriteSharedPromptFilesCreates12Files verifies that WriteSharedPromptFiles
+// creates exactly the 12 expected prompt files under {homeDir}/.config/opencode/prompts/sdd/.
+func TestWriteSharedPromptFilesCreates12Files(t *testing.T) {
 	home := t.TempDir()
 
 	changed, err := WriteSharedPromptFiles(home)
@@ -40,6 +40,8 @@ func TestWriteSharedPromptFilesCreates10Files(t *testing.T) {
 		"sdd-verify.md",
 		"sdd-archive.md",
 		"sdd-onboard.md",
+		"sdd-inspect.md",
+		"sdd-optimize.md",
 	}
 
 	promptDir := SharedPromptDir(home)
@@ -103,6 +105,8 @@ func TestWriteSharedPromptFilesContent(t *testing.T) {
 		{"sdd-verify.md", "verify"},
 		{"sdd-archive.md", "archive"},
 		{"sdd-onboard.md", "onboard"},
+		{"sdd-inspect.md", "inspect"},
+		{"sdd-optimize.md", "optimize"},
 	}
 
 	for _, tc := range phases {
@@ -149,7 +153,7 @@ func TestInjectOpenCodeMultiModeSubagentPromptsUseFilePaths(t *testing.T) {
 	promptDir := SharedPromptDir(home)
 
 	text := strings.ReplaceAll(string(content), `\\`, `/`)
-	for _, phase := range []string{"sdd-init", "sdd-explore", "sdd-propose", "sdd-spec", "sdd-design", "sdd-tasks", "sdd-apply", "sdd-verify", "sdd-archive", "sdd-onboard"} {
+	for _, phase := range []string{"sdd-init", "sdd-explore", "sdd-propose", "sdd-spec", "sdd-design", "sdd-tasks", "sdd-apply", "sdd-verify", "sdd-archive", "sdd-onboard", "sdd-inspect", "sdd-optimize"} {
 		expectedRef := "{file:" + filepath.Join(promptDir, phase+".md") + "}"
 		expectedRef = strings.ReplaceAll(expectedRef, `\`, `/`)
 		if !strings.Contains(text, expectedRef) {
@@ -158,9 +162,9 @@ func TestInjectOpenCodeMultiModeSubagentPromptsUseFilePaths(t *testing.T) {
 	}
 }
 
-// TestInjectOpenCodeMultiModeOrchestratorPromptIsStillInlined verifies that
-// the orchestrator prompt is still inlined (not a file reference) after injection.
-func TestInjectOpenCodeMultiModeOrchestratorPromptIsStillInlined(t *testing.T) {
+// TestInjectOpenCodeMultiModeOrchestratorPromptUsesFileRef verifies that
+// the orchestrator prompt uses a {file:...} reference (not inline text) after injection.
+func TestInjectOpenCodeMultiModeOrchestratorPromptUsesFileRef(t *testing.T) {
 	home := t.TempDir()
 	mockNoPackageManager(t)
 
@@ -176,11 +180,20 @@ func TestInjectOpenCodeMultiModeOrchestratorPromptIsStillInlined(t *testing.T) {
 
 	text := string(content)
 
-	// The orchestrator still uses {file:./AGENTS.md} from the overlay (not from prompts/).
-	// We check that there's NO file reference inside the prompts/sdd/ dir for orchestrator.
-	promptDir := SharedPromptDir(home)
-	if strings.Contains(text, filepath.Join(promptDir, "sdd-orchestrator.md")) {
-		t.Fatal("orchestrator should NOT use a file reference from prompts/sdd/")
+	// The orchestrator should reference its prompt via {file:...} pointing to agents/.
+	orchestratorFile := filepath.Join(OrchestratorPromptDir(home), "framework-orchestrator.md")
+	expectedRef := "{file:" + orchestratorFile + "}"
+	if !strings.Contains(text, expectedRef) {
+		t.Fatalf("orchestrator prompt should be a file reference %q in opencode.json", expectedRef)
+	}
+
+	// Verify the referenced file actually exists and contains the orchestrator content.
+	fileContent, err := os.ReadFile(orchestratorFile)
+	if err != nil {
+		t.Fatalf("ReadFile(%q) error = %v", orchestratorFile, err)
+	}
+	if !strings.Contains(string(fileContent), "Gentle AI") {
+		t.Fatal("orchestrator prompt file missing expected content")
 	}
 }
 

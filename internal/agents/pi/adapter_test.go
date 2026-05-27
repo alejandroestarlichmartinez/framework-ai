@@ -7,9 +7,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/internal/model"
-	"github.com/gentleman-programming/gentle-ai/internal/system"
-	"github.com/gentleman-programming/gentle-ai/internal/versions"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/model"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/system"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/versions"
 )
 
 func TestAdapterIdentityAndCapabilities(t *testing.T) {

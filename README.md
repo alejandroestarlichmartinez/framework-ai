@@ -1,13 +1,12 @@
 <div align="center">
 
-<img width="3276" height="1280" alt="Gentle-AI neon rose banner" src="docs/assets/brand/gentle-ai-banner.png" />
+<h1>Framework-AI</h1>
 
-<h1>Gentle-AI</h1>
-
-<p><strong>Gentle-AI — Ecosystem, Frameworks, Workflows for AI coding agents.</strong></p>
+<p><strong>Framework-AI — Ecosystem, Frameworks, Workflows for AI coding agents.</strong></p>
+<p>Forked from Gentle - AI</p>
 
 <p>
-<a href="https://github.com/Gentleman-Programming/gentle-ai/releases"><img src="https://img.shields.io/github/v/release/Gentleman-Programming/gentle-ai" alt="Release"></a>
+<a href="https://github.com/alejandroestarlichmartinez/framework-ai/releases"><img src="https://img.shields.io/github/v/release/alejandroestarlichmartinez/framework-ai" alt="Release"></a>
 <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
 <img src="https://img.shields.io/badge/Go-1.24+-00ADD8?logo=go&logoColor=white" alt="Go 1.24+">
 <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-lightgrey" alt="Platform">
@@ -68,14 +67,14 @@ The goal is not ceremony. The goal is to avoid accidental chaos while preserving
 ### macOS / Linux
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Gentleman-Programming/gentle-ai/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/alejandroestarlichmartinez/framework-ai/main/scripts/install.sh | bash
 ```
 
 ### Windows
 
 ```powershell
 scoop bucket add gentleman https://github.com/Gentleman-Programming/scoop-bucket
-scoop install gentle-ai
+scoop install framework-ai
 ```
 
 ### After install: project-level setup
@@ -85,7 +84,7 @@ Once your agents are configured, open your AI agent in a project and run these t
 | Command                            | What it does                                                                | When to re-run                                                                 |
 | ---------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
 | `/sdd-init`                        | Detects stack, testing capabilities, activates Strict TDD Mode if available | When your project adds/removes test frameworks, or first time in a new project |
-| `gentle-ai skill-registry refresh` | Scans installed skills and project conventions, builds the registry         | After installing/removing skills, or first time in a new project               |
+| `framework-ai skill-registry refresh` | Scans installed skills and project conventions, builds the registry         | After installing/removing skills, or first time in a new project               |
 
 These are **not required** for basic usage. The SDD orchestrator runs `/sdd-init` automatically if it detects no context. Startup hooks normally keep the skill registry fresh for agents that support hooks, including Pi through `gentle-pi`. If you start Pi with `pi -ns`, startup skill loading/hooks are skipped, so run the registry refresh manually when you need updated project rules.
 
@@ -98,11 +97,11 @@ These are **not required** for basic usage. The SDD orchestrator runs `/sdd-init
 ```bash
 # macOS / Linux
 brew tap Gentleman-Programming/homebrew-tap
-brew install gentle-ai
+brew install framework-ai
 
 # Windows
 scoop bucket add gentleman https://github.com/Gentleman-Programming/scoop-bucket
-scoop install gentle-ai
+scoop install framework-ai
 ```
 
 <details>
@@ -111,7 +110,7 @@ scoop install gentle-ai
 #### Go install (any platform with Go 1.24+)
 
 ```bash
-go install github.com/gentleman-programming/gentle-ai/cmd/gentle-ai@latest
+go install github.com/alejandroestarlichmartinez/framework-ai/cmd/framework-ai@latest
 ```
 
 #### Windows
@@ -120,7 +119,7 @@ Use Scoop on Windows. It is the supported install path for keeping Gentle AI upd
 
 ```powershell
 scoop bucket add gentleman https://github.com/Gentleman-Programming/scoop-bucket
-scoop install gentle-ai
+scoop install framework-ai
 ```
 
 </details>
@@ -139,25 +138,78 @@ See [Backup & Rollback Guide](docs/rollback.md) for details.
 
 ### OpenCode SDD Profiles
 
-Assign different AI models to different SDD phases -- a powerful model for design, a fast one for implementation, a cheap one for exploration. OpenCode uses **`gentle-orchestrator`** as the base SDD conductor, and generated named profiles still appear as `sdd-orchestrator-{name}` entries.
+Assign different AI models to different SDD phases -- a powerful model for design, a fast one for implementation, a cheap one for exploration. OpenCode uses **`framework-orchestrator`** as the base SDD conductor, and generated named profiles still appear as `sdd-orchestrator-{name}` entries.
 
 ```bash
 # Via CLI
-gentle-ai sync --profile cheap:openrouter/qwen/qwen3-30b-a3b:free
-gentle-ai sync --profile-phase cheap:sdd-design:anthropic/claude-sonnet-4-20250514
+framework-ai sync --profile cheap:openrouter/qwen/qwen3-30b-a3b:free
+framework-ai sync --profile-phase cheap:sdd-design:anthropic/claude-sonnet-4-20250514
 
-# Or via TUI: gentle-ai → "OpenCode SDD Profiles" → Create
+# Or via TUI: framework-ai → "OpenCode SDD Profiles" → Create
 ```
 
-After creating a profile, open OpenCode and press **Tab** to switch between `gentle-orchestrator` (default) and your custom profiles.
+After creating a profile, open OpenCode and press **Tab** to switch between `framework-orchestrator` (default) and your custom profiles.
 
 | What you need         | Use this                                                        |
 | --------------------- | --------------------------------------------------------------- |
-| Default SDD conductor | `gentle-orchestrator`                                           |
-| Legacy configs        | `sdd-orchestrator` is migrated to `gentle-orchestrator` on sync |
+| Default SDD conductor | `framework-orchestrator`                                           |
+| Legacy configs        | `sdd-orchestrator` is migrated to `framework-orchestrator` on sync |
 | Named model profiles  | `sdd-orchestrator-cheap`, `sdd-orchestrator-premium`, etc.      |
 
 **Full guide**: [OpenCode SDD Profiles](docs/opencode-profiles.md)
+
+### CodeGraph (Semantic Code Intelligence)
+
+CodeGraph builds a pre-indexed knowledge graph of your codebase, giving your agent instant code exploration without expensive `grep` + `Read` loops.
+
+**What it does:**
+- **~35% cheaper** sessions — fewer tokens wasted on discovery
+- **~71% fewer tool calls** — answers from the graph instead of file scanning
+- **100% local** — SQLite database, no data leaves your machine
+
+**How it works:**
+1. Install framework-ai with **CodeGraph** selected (or add it later via `framework-ai sync`)
+2. In any project, run `codegraph init -i` to build the index
+3. Your agent automatically uses CodeGraph tools (`codegraph_context`, `codegraph_explore`, `codegraph_trace`) instead of spawning exploration sub-agents
+
+```bash
+# Initialize CodeGraph in your project
+cd your-project
+codegraph init -i
+
+# Check index status
+codegraph status
+
+# Query from terminal (optional)
+codegraph context "how does auth work"
+codegraph trace "handleRequest" "execute_sql"
+```
+
+**Supported agents:** Claude Code, OpenCode, Cursor, Codex, VS Code Copilot, Gemini CLI, Kiro IDE, Qwen Code, Windsurf, Antigravity, Kimi, Pi. CodeGraph MCP config is injected automatically for all supported agents.
+
+> **Tip:** Initialize CodeGraph once per project. The index stays fresh with a file watcher — zero maintenance after `init`.
+
+---
+
+### Token Optimization (Optional)
+
+For additional token savings on command output (git status, cargo test, npm test, etc.), install **RTK** manually:
+
+```bash
+# Install RTK globally
+curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh
+
+# Configure for your agent
+rtk init -g --opencode     # or --agent cursor, --gemini, etc.
+```
+
+RTK is **complementary** to CodeGraph:
+- **CodeGraph** (via framework-ai) → reduces tokens in **code exploration**
+- **RTK** (manual install) → reduces tokens in **command output**
+
+Both together = maximum efficiency. Neither is required — they are optimizations, not prerequisites.
+
+---
 
 ### Engram (Persistent Memory)
 
@@ -203,14 +255,14 @@ This project gets better when the community builds on top of it.
 - [sub-agent-statusline](https://github.com/Joaquinvesapa/sub-agent-statusline) — optional OpenCode TUI plugin that shows sub-agent activity, status, elapsed time, and token/context usage when OpenCode exposes it.
 - [sdd-engram-plugin](https://github.com/j0k3r-dev-rgl/sdd-engram-plugin) — optional OpenCode TUI plugin to manage SDD profiles and browse Engram memories directly from OpenCode, with runtime profile activation and no restart required.
 
-When you select OpenCode in the installer, Gentle-AI asks whether to register each community plugin and offers a browser shortcut to review the repository first. Gentle-AI only ensures `~/.config/opencode/tui.json` exists and adds the plugin package names to its `plugin` array; OpenCode installs/loads those packages the next time it starts. Once OpenCode has materialized a plugin under `~/.config/opencode/node_modules/`, `gentle-ai update` can compare its local `package.json` version with the plugin's GitHub releases.
+When you select OpenCode in the installer, Gentle-AI asks whether to register each community plugin and offers a browser shortcut to review the repository first. Gentle-AI only ensures `~/.config/opencode/tui.json` exists and adds the plugin package names to its `plugin` array; OpenCode installs/loads those packages the next time it starts. Once OpenCode has materialized a plugin under `~/.config/opencode/node_modules/`, `framework-ai update` can compare its local `package.json` version with the plugin's GitHub releases.
 
 ## Contributors
 
 This project exists because of the community. See [CONTRIBUTORS.md](CONTRIBUTORS.md) for the full list.
 
-<a href="https://github.com/Gentleman-Programming/gentle-ai/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=Gentleman-Programming/gentle-ai" />
+<a href="https://github.com/alejandroestarlichmartinez/framework-ai/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=alejandroestarlichmartinez/framework-ai" />
 </a>
 
 ---
@@ -221,7 +273,8 @@ This project exists because of the community. See [CONTRIBUTORS.md](CONTRIBUTORS
 - **Using OpenCode?** Set up [SDD Profiles](docs/opencode-profiles.md) to assign different models per phase.
 - **Using Pi?** Read [Pi Agent](docs/pi.md) for Pi commands, persona, model assignments, and package behavior.
 - **Want to share memory across machines?** Learn `engram sync` in the [Engram reference](docs/engram.md).
-- **Ready to contribute?** Check [CONTRIBUTING.md](CONTRIBUTING.md) and the [open issues](https://github.com/Gentleman-Programming/gentle-ai/issues?q=is%3Aissue+is%3Aopen+label%3A%22status%3Aapproved%22).
+- **Want faster code exploration?** Initialize [CodeGraph](#codegraph-semantic-code-intelligence) in your project with `codegraph init -i`.
+- **Ready to contribute?** Check [CONTRIBUTING.md](CONTRIBUTING.md) and the [open issues](https://github.com/alejandroestarlichmartinez/framework-ai/issues?q=is%3Aissue+is%3Aopen+label%3A%22status%3Aapproved%22).
 
 ---
 

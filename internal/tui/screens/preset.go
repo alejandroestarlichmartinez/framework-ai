@@ -3,13 +3,14 @@ package screens
 import (
 	"strings"
 
-	"github.com/gentleman-programming/gentle-ai/internal/model"
-	"github.com/gentleman-programming/gentle-ai/internal/tui/styles"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/model"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/tui/styles"
 )
 
 func PresetOptions() []model.PresetID {
 	return []model.PresetID{
 		model.PresetFullGentleman,
+		model.PresetFullRick,
 		model.PresetEcosystemOnly,
 		model.PresetMinimal,
 		model.PresetCustom,
@@ -18,6 +19,7 @@ func PresetOptions() []model.PresetID {
 
 var presetDescriptions = map[model.PresetID]string{
 	model.PresetFullGentleman: "Everything: memory, SDD, skills, docs, persona & security",
+	model.PresetFullRick:      "Everything: memory, SDD, skills, docs, persona & security — with Rick Sanchez as default persona",
 	model.PresetEcosystemOnly: "Core tools only: memory, SDD, skills & docs (no persona/security)",
 	model.PresetMinimal:       "Just Engram persistent memory",
 	model.PresetCustom:        "Choose components and skills manually; keep existing persona/settings unmanaged",

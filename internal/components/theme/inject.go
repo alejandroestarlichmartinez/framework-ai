@@ -6,9 +6,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/gentleman-programming/gentle-ai/internal/agents"
-	"github.com/gentleman-programming/gentle-ai/internal/components/filemerge"
-	"github.com/gentleman-programming/gentle-ai/internal/model"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/agents"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/components/filemerge"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/model"
 )
 
 type InjectionResult struct {
@@ -32,10 +32,10 @@ var gentlemanClaudeTheme = claudeTheme{
 		"diffRemoved":               "#5C3838",
 		"diffAddedWord":             "#76946A",
 		"diffRemovedWord":           "#C34043",
-		"chromeYellow":              "#DCA561",
-		"briefLabelYou":             "#DCA561",
-		"rainbow_yellow":            "#DCA561",
-		"yellow_FOR_SUBAGENTS_ONLY": "#DCA561",
+		"chromeYellow":              "#f7df1e",
+		"briefLabelYou":             "#f7df1e",
+		"rainbow_yellow":            "#f7df1e",
+		"yellow_FOR_SUBAGENTS_ONLY": "#f7df1e",
 	},
 }
 

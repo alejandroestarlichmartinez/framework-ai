@@ -67,7 +67,7 @@ The `<available_skills>` block in your system prompt is authoritative — it lis
 
 Multiple skills can apply at once. Match by file context (extensions, paths) and task context (what the user is asking for).
 
-<!-- gentle-ai:sdd-orchestrator -->
+<!-- framework-ai:framework-orchestrator -->
 # Agent Teams Lite — Orchestrator Instructions (Windsurf Cascade)
 
 Bind this to the dedicated `sdd-orchestrator` rule or memory only. Do NOT apply it to phase skill files such as `sdd-apply` or `sdd-verify`.
@@ -164,7 +164,7 @@ This ensures:
 
 Do NOT skip this check. Do NOT ask the user — just run init silently if needed.
 
-Native Windsurf Workflow: `/sdd-new` is also available as a native Windsurf workflow installed by gentle-ai. It can be triggered from the Windsurf workflow panel.
+Native Windsurf Workflow: `/sdd-new` is also available as a native Windsurf workflow installed by framework-ai. It can be triggered from the Windsurf workflow panel.
 
 ### Execution Mode
 
@@ -236,7 +236,7 @@ Automatic mode does not override this guard. Always include the resolved `delive
 
 When executing the inline `sdd-apply` phase, always include the resolved `delivery_strategy`, `chain_strategy`, and any chosen PR boundary/exception in the phase context.
 
-<!-- gentle-ai:sdd-model-assignments -->
+<!-- framework-ai:sdd-model-assignments -->
 ## Model Assignments
 
 Read this table at session start. Windsurf Cascade supports multiple models — if your current model matches a phase's recommended alias, proceed normally. If you cannot switch models mid-session, use the table as a reasoning-depth guide: phases assigned to `opus` require deeper architectural thinking, while `haiku` phases are mechanical.
@@ -254,7 +254,7 @@ Read this table at session start. Windsurf Cascade supports multiple models — 
 | sdd-archive | haiku | Copy and close |
 | default | sonnet | Non-SDD general delegation |
 
-<!-- /gentle-ai:sdd-model-assignments -->
+<!-- /framework-ai:sdd-model-assignments -->
 
 ## Windsurf-Native Features
 
@@ -431,9 +431,9 @@ DAG state is tracked in Engram under `sdd/{change-name}/state`. Update it after 
 - `engram` → `mem_search(...)` → `mem_get_observation(...)`
 - `openspec` → read `openspec/changes/*/state.yaml`
 - `none` → state not persisted — explain to user
-<!-- /gentle-ai:sdd-orchestrator -->
+<!-- /framework-ai:framework-orchestrator -->
 
-<!-- gentle-ai:engram-protocol -->
+<!-- framework-ai:engram-protocol -->
 ## Engram Persistent Memory — Protocol
 
 You have access to Engram, a persistent memory system that survives across sessions and compactions.
@@ -527,4 +527,4 @@ If you see a compaction message or "FIRST ACTION REQUIRED":
 3. Only THEN continue working
 
 Do not skip step 1. Without it, everything done before compaction is lost from memory.
-<!-- /gentle-ai:engram-protocol -->
+<!-- /framework-ai:engram-protocol -->

@@ -14,11 +14,11 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/gentleman-programming/gentle-ai/internal/assets"
-	"github.com/gentleman-programming/gentle-ai/internal/components/filemerge"
-	"github.com/gentleman-programming/gentle-ai/internal/installcmd"
-	"github.com/gentleman-programming/gentle-ai/internal/model"
-	"github.com/gentleman-programming/gentle-ai/internal/system"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/assets"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/components/filemerge"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/installcmd"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/model"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/system"
 )
 
 var LookPathOverride = exec.LookPath

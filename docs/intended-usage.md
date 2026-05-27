@@ -4,13 +4,13 @@
 
 ---
 
-This page explains how gentle-ai is meant to be used. Not the flags, not the architecture -- just the mental model. If you read one page besides the README, make it this one.
+This page explains how framework-ai is meant to be used. Not the flags, not the architecture -- just the mental model. If you read one page besides the README, make it this one.
 
 ---
 
 ## After Installing -- You're Done
 
-Once you run `gentle-ai` and select your agent(s), components, and preset, everything is configured. There is nothing else to do. No commands to memorize, no workflows to learn, no config files to edit.
+Once you run `framework-ai` and select your agent(s), components, and preset, everything is configured. There is nothing else to do. No commands to memorize, no workflows to learn, no config files to edit.
 
 Open your AI agent and start working. That's it.
 
@@ -64,14 +64,14 @@ For **all other agents** (Claude Code, Cursor, Gemini CLI, VS Code Copilot), SDD
 If you want multi-mode in OpenCode:
 
 1. Connect your AI providers in OpenCode first
-2. Create a profile via gentle-ai TUI ("OpenCode SDD Profiles") or CLI (`--profile` flag)
-3. The base/default SDD conductor is `gentle-orchestrator`
+2. Create a profile via framework-ai TUI ("OpenCode SDD Profiles") or CLI (`--profile` flag)
+3. The base/default SDD conductor is `framework-orchestrator`
 4. Named profiles generate `sdd-orchestrator-{name}` + suffixed sub-agents, each assigned to your chosen model
-5. In OpenCode, press **Tab** to switch between `gentle-orchestrator` and custom profiles
+5. In OpenCode, press **Tab** to switch between `framework-orchestrator` and custom profiles
 
 You can create multiple profiles (e.g., "cheap" for experimentation, "premium" for production) and switch between them freely.
 
-If you prefer a **runtime profile manager** that keeps profiles outside `opencode.json`, gentle-ai now supports that too. During sync, OpenCode can auto-detect external profile files under `~/.config/opencode/profiles/*.json` and switch to a safer compatibility path that preserves the active `gentle-orchestrator` prompt instead of overwriting it.
+If you prefer a **runtime profile manager** that keeps profiles outside `opencode.json`, framework-ai now supports that too. During sync, OpenCode can auto-detect external profile files under `~/.config/opencode/profiles/*.json` and switch to a safer compatibility path that preserves the active `framework-orchestrator` prompt instead of overwriting it.
 
 **Full step-by-step guide**: [OpenCode SDD Profiles](opencode-profiles.md)
 
@@ -114,7 +114,7 @@ The orchestrator must stop acting as a monolithic executor when complexity appea
 
 ## Skills -- Two Layers
 
-gentle-ai installs **SDD skills** and **foundation skills** (workflow, testing patterns) directly into your agent's skills directory. These are embedded in the binary and always up to date.
+framework-ai installs **SDD skills** and **foundation skills** (workflow, testing patterns) directly into your agent's skills directory. These are embedded in the binary and always up to date.
 
 For **coding skills** (React 19, Angular, TypeScript, Tailwind, Zod, Playwright, etc.), the community maintains a separate repository: [Gentleman-Programming/Gentleman-Skills](https://github.com/Gentleman-Programming/Gentleman-Skills). You install those manually by cloning the repo and copying the skills you want:
 
@@ -131,10 +131,10 @@ Once installed, your agent detects what you're working on and loads the relevant
 
 How it works:
 
-1. **The registry refreshes at startup where the agent supports hooks.** Normal Pi startup runs the `gentle-pi` session hook. Claude Code and OpenCode run `gentle-ai skill-registry refresh --quiet` from their installed startup/plugin hooks.
+1. **The registry refreshes at startup where the agent supports hooks.** Normal Pi startup runs the `gentle-pi` session hook. Claude Code and OpenCode run `framework-ai skill-registry refresh --quiet` from their installed startup/plugin hooks.
 2. **The refresh is cached.** Gentle-AI fingerprints discovered `SKILL.md` files using schema version, path, mtime, and size. If `.atl/.skill-registry.cache.json` matches and `.atl/skill-registry.md` exists, startup is a cheap cache-hit.
 3. **The orchestrator uses it automatically** -- once the registry exists, the orchestrator reads it at session start and passes pre-resolved compact rule text to sub-agents. You don't interact with the registry after that.
-4. **Manual fallback stays available** -- run `gentle-ai skill-registry refresh --force` from a project if you want to regenerate immediately.
+4. **Manual fallback stays available** -- run `framework-ai skill-registry refresh --force` from a project if you want to regenerate immediately.
 
 There's also an automated side: `sdd-init` runs the same registry logic internally, so if you use SDD in a new project, the registry gets built as part of that flow.
 
@@ -146,7 +146,7 @@ There's also an automated side: `sdd-init` runs the same registry logic internal
 
 Gentle AI is an ecosystem **configurator**. It sets up your AI agent with memory, skills, workflows, and a persona -- then gets out of the way.
 
-The less you think about gentle-ai after installing, the better it's working.
+The less you think about framework-ai after installing, the better it's working.
 
 ---
 
@@ -158,6 +158,6 @@ The less you think about gentle-ai after installing, the better it's working.
 | Just start coding with your AI agent                       | Memorize SDD phases or commands                                                   |
 | Let the agent suggest SDD when a task is big enough        | Force SDD on every small task                                                     |
 | Trust that engram is saving context for you                | Dig into engram's storage unless you need `engram sync` or `engram tui`           |
-| Let startup hooks refresh the skill registry automatically | Manually rescan skills unless you need `gentle-ai skill-registry refresh --force` |
+| Let startup hooks refresh the skill registry automatically | Manually rescan skills unless you need `framework-ai skill-registry refresh --force` |
 | Say "use sdd" if you know you want structured planning     | Worry about which SDD phase comes next                                            |
 | Re-run the installer to update or change your setup        | Manually patch skill files or persona instructions                                |

@@ -51,7 +51,7 @@ jobs:
         with:
           context: .
           file: e2e/${{ matrix.platform.dockerfile }}
-          tags: gentle-ai-e2e-${{ matrix.platform.name }}:ci
+          tags: framework-ai-e2e-${{ matrix.platform.name }}:ci
           load: true
           cache-from: type=gha,scope=e2e-${{ matrix.platform.name }}
           cache-to: type=gha,mode=max,scope=e2e-${{ matrix.platform.name }}
@@ -71,4 +71,4 @@ jobs:
             -e RUN_FULL_E2E \
             -e RUN_BACKUP_TESTS \
             -e GITHUB_TOKEN \
-            gentle-ai-e2e-${{ matrix.platform.name }}:ci
+            framework-ai-e2e-${{ matrix.platform.name }}:ci

@@ -3,9 +3,9 @@
 // isolated from install, pipeline, planner, and config-sync code paths.
 //
 // Import boundary: this package MUST NOT import:
-//   - github.com/gentleman-programming/gentle-ai/internal/pipeline
-//   - github.com/gentleman-programming/gentle-ai/internal/planner
-//   - github.com/gentleman-programming/gentle-ai/internal/cli
+//   - github.com/alejandroestarlichmartinez/framework-ai/internal/pipeline
+//   - github.com/alejandroestarlichmartinez/framework-ai/internal/planner
+//   - github.com/alejandroestarlichmartinez/framework-ai/internal/cli
 package upgrade
 
 import (
@@ -20,16 +20,16 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gentleman-programming/gentle-ai/internal/agents"
-	"github.com/gentleman-programming/gentle-ai/internal/assets"
-	"github.com/gentleman-programming/gentle-ai/internal/backup"
-	"github.com/gentleman-programming/gentle-ai/internal/components/gga"
-	"github.com/gentleman-programming/gentle-ai/internal/components/sdd"
-	"github.com/gentleman-programming/gentle-ai/internal/components/skills"
-	"github.com/gentleman-programming/gentle-ai/internal/model"
-	"github.com/gentleman-programming/gentle-ai/internal/state"
-	"github.com/gentleman-programming/gentle-ai/internal/system"
-	"github.com/gentleman-programming/gentle-ai/internal/update"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/agents"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/assets"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/backup"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/components/gga"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/components/sdd"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/components/skills"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/model"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/state"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/system"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/update"
 )
 
 // Package-level vars for testability — same pattern as internal/update/detect.go.
@@ -44,7 +44,7 @@ var snapshotCreator = func(snapshotDir string, paths []string) (backup.Manifest,
 	return backup.NewSnapshotter().Create(snapshotDir, paths)
 }
 
-// AppVersion is the gentle-ai version written into backup manifests created by
+// AppVersion is the framework-ai version written into backup manifests created by
 // the upgrade executor. Set by app.go before calling Execute so that upgrade
 // backups record the version that created them.
 // Default "dev" matches the ldflags default in app.Version.
@@ -430,7 +430,7 @@ func ExecuteWithOptions(ctx context.Context, results []update.UpdateResult, prof
 	backupWarning := ""
 	if !dryRun && len(executable) > 0 && !options.SkipBackup {
 		sp := NewSpinner(pw, "Creating pre-upgrade backup")
-		snapshotDir := filepath.Join(homeDir, ".gentle-ai", "backups",
+		snapshotDir := filepath.Join(homeDir, ".framework-ai", "backups",
 			fmt.Sprintf("upgrade-%s", time.Now().UTC().Format("20060102T150405Z")))
 		manifest, err := snapshotCreator(snapshotDir, configPathsForBackup(homeDir, options.BackupDiagnostics))
 		if err != nil {
@@ -456,7 +456,7 @@ func ExecuteWithOptions(ctx context.Context, results []update.UpdateResult, prof
 		// snapshot fails due to disk pressure caused by prior accumulated
 		// backups, pruning is the recovery path. Non-fatal: a prune failure
 		// must not prevent the upgrade from completing.
-		backupRoot := filepath.Join(homeDir, ".gentle-ai", "backups")
+		backupRoot := filepath.Join(homeDir, ".framework-ai", "backups")
 		if _, pruneErr := backup.Prune(backupRoot, backup.DefaultRetentionCount); pruneErr != nil {
 			log.Printf("backup: prune: %v", pruneErr)
 		}

@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/internal/model"
-	"github.com/gentleman-programming/gentle-ai/internal/system"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/model"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/system"
 )
 
 func TestAdapter_Agent(t *testing.T) {
@@ -149,7 +149,7 @@ func TestAdapter_SystemPromptDir(t *testing.T) {
 func TestAdapter_SystemPromptFile(t *testing.T) {
 	adapter := NewAdapter()
 	homeDir := "/home/user"
-	expected := filepath.Join(homeDir, ".kiro", "steering", "gentle-ai.md")
+	expected := filepath.Join(homeDir, ".kiro", "steering", "framework-ai.md")
 
 	got := adapter.SystemPromptFile(homeDir)
 	if got != expected {

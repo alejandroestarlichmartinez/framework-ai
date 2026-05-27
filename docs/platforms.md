@@ -24,7 +24,7 @@ Release artifacts are produced by CI, but Windows users should install through S
 - **npm global installs** do not require `sudo` on Windows (user-writable by default).
 - **curl** is pre-installed on Windows 10+ and does not require separate installation.
 - **PowerShell** is the default shell when `$SHELL` is not set.
-- **GGA on Windows** works from both Git Bash and PowerShell. gentle-ai installs a `gga.ps1` shim that automatically delegates to Git Bash, so no manual shell switching is required.
+- **GGA on Windows** works from both Git Bash and PowerShell. framework-ai installs a `gga.ps1` shim that automatically delegates to Git Bash, so no manual shell switching is required.
 
 ---
 

@@ -11,7 +11,7 @@ Toggle components with enter or space.
   [ ] context7
     Latest framework and library docs
   [ ] persona
-    Gentleman, neutral or custom behavior
+    Gentleman, Rick Sanchez, neutral or custom behavior
   [ ] permissions
     Security-first defaults and guardrails
   [ ] gga
@@ -22,6 +22,8 @@ Toggle components with enter or space.
     Claude Code Gentleman custom theme
   [ ] opencode-gentle-logo
     OpenCode home logo TUI plugin with Braille rose
+  [ ] codegraph
+    Semantic code knowledge graph
 
   Continue
   Back

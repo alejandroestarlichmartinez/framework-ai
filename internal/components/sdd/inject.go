@@ -9,10 +9,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/gentleman-programming/gentle-ai/internal/agents"
-	"github.com/gentleman-programming/gentle-ai/internal/assets"
-	"github.com/gentleman-programming/gentle-ai/internal/components/filemerge"
-	"github.com/gentleman-programming/gentle-ai/internal/model"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/agents"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/assets"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/components/filemerge"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/model"
 )
 
 type InjectionResult struct {
@@ -31,7 +31,7 @@ type InjectOptions struct {
 	WorkspaceDir string
 
 	// StrictTDD enables Strict TDD mode. When true, a
-	// <!-- gentle-ai:strict-tdd-mode --> marker section is injected into
+	// <!-- framework-ai:strict-tdd-mode --> marker section is injected into
 	// the agent's system prompt so agents know Strict TDD is active.
 	StrictTDD bool
 
@@ -41,7 +41,7 @@ type InjectOptions struct {
 	Profiles []model.Profile
 
 	// PreserveOpenCodeOrchestratorPrompt keeps the existing
-	// opencode.json agent.gentle-orchestrator.prompt value during sync.
+	// opencode.json agent.framework-orchestrator.prompt value during sync.
 	// Used by external-single-active profile strategy integrations where
 	// external tools extend orchestrator policy/prompt at runtime.
 	PreserveOpenCodeOrchestratorPrompt bool
@@ -127,7 +127,7 @@ type bootstrapper interface {
 //  3. Weak marker (package.json only) — record as candidate but keep walking
 //     upward, since a monorepo marker may exist higher up.
 //
-// Walking upward means users can run gentle-ai from any subdirectory of their
+// Walking upward means users can run framework-ai from any subdirectory of their
 // project (e.g. repo/packages/app) and still detect the correct workspace root.
 // In a JS/TS monorepo, every package has package.json, so we must not stop at
 // the first one — we keep walking to find the highest ancestor with package.json
@@ -211,7 +211,7 @@ func Inject(homeDir string, adapter agents.Adapter, sddMode model.SDDModeID, opt
 
 	// 1. Inject SDD orchestrator into the global system prompt for agents that
 	// rely on prompt files. OpenCode and Kilocode are handled differently: their
-	// orchestrator instructions must be scoped to the OpenCode gentle-orchestrator agent only,
+	// orchestrator instructions must be scoped to the OpenCode framework-orchestrator agent only,
 	// otherwise the SDD phase sub-agents inherit coordinator-only delegation rules.
 	if adapter.Agent() != model.AgentOpenCode && adapter.Agent() != model.AgentKilocode {
 		switch adapter.SystemPromptStrategy() {
@@ -245,10 +245,10 @@ func Inject(homeDir string, adapter agents.Adapter, sddMode model.SDDModeID, opt
 			}
 
 			// Write the SDD orchestrator as a standalone Jinja include module.
-			// The static KIMI.md template references it via {% include "sdd-orchestrator.md" %}.
+			// The static KIMI.md template references it via {% include "framework-orchestrator.md" %}.
 			configDir := adapter.GlobalConfigDir(homeDir)
 			content := assets.MustRead(sddOrchestratorAsset(adapter.Agent()))
-			modulePath := filepath.Join(configDir, "sdd-orchestrator.md")
+			modulePath := filepath.Join(configDir, "framework-orchestrator.md")
 			writeResult, err := filemerge.WriteFileAtomic(modulePath, []byte(content), 0o644)
 			if err != nil {
 				return InjectionResult{}, err
@@ -328,7 +328,7 @@ func Inject(homeDir string, adapter agents.Adapter, sddMode model.SDDModeID, opt
 		}
 	}
 
-	// 2b. OpenCode /sdd-* commands reference agent: gentle-orchestrator.
+	// 2b. OpenCode /sdd-* commands reference agent: framework-orchestrator.
 	// Ensure that agent is present even when persona component is not installed.
 	//
 	// mergedSettingsBytes holds the final merged opencode.json bytes produced by
@@ -361,7 +361,47 @@ func Inject(homeDir string, adapter agents.Adapter, sddMode model.SDDModeID, opt
 				changed = changed || promptsChanged
 			}
 
-			overlayBytes, err = inlineOpenCodeSDDPrompts(overlayBytes, homeDir, settingsPath, opts.PreserveOpenCodeOrchestratorPrompt)
+			// Write the orchestrator prompt to a separate file so opencode.json
+			// references it via {file:...} instead of inlining the full text.
+			var orchestratorPrompt string
+			if opts.PreserveOpenCodeOrchestratorPrompt {
+			existingPrompt, err := readOpenCodeAgentPrompt(settingsPath, "framework-orchestrator")
+			if err != nil {
+				return InjectionResult{}, err
+			}
+			if existingPrompt == "" {
+				existingPrompt, err = readOpenCodeAgentPrompt(settingsPath, "gentle-orchestrator")
+				if err != nil {
+					return InjectionResult{}, err
+				}
+			}
+			if existingPrompt == "" {
+				existingPrompt, err = readOpenCodeAgentPrompt(settingsPath, "sdd-orchestrator")
+				if err != nil {
+					return InjectionResult{}, err
+				}
+			}
+			if existingPrompt == "" {
+				existingPrompt, err = readMisnamedOpenCodeGentlemanSDDPrompt(settingsPath)
+				if err != nil {
+					return InjectionResult{}, err
+				}
+			}
+				if existingPrompt != "" {
+					orchestratorPrompt = migratePreservedOpenCodeOrchestratorPrompt(existingPrompt)
+				}
+			}
+			if orchestratorPrompt == "" {
+				orchestratorPrompt = assets.MustRead(sddOrchestratorAsset(model.AgentOpenCode))
+			}
+			orchestratorPath, orchestratorChanged, err := WriteOrchestratorPromptFile(homeDir, orchestratorPrompt)
+			if err != nil {
+				return InjectionResult{}, fmt.Errorf("write orchestrator prompt file: %w", err)
+			}
+			changed = changed || orchestratorChanged
+			files = append(files, orchestratorPath)
+
+			overlayBytes, err = inlineOpenCodeSDDPrompts(overlayBytes, homeDir, settingsPath, opts.PreserveOpenCodeOrchestratorPrompt, orchestratorPath)
 			if err != nil {
 				return InjectionResult{}, fmt.Errorf("inline OpenCode SDD prompts: %w", err)
 			}
@@ -516,7 +556,7 @@ func Inject(homeDir string, adapter agents.Adapter, sddMode model.SDDModeID, opt
 
 	// 3b. Write native workflow files (Windsurf Hybrid-First, and any future
 	// agent that implements the workflowInjector optional interface).
-	// findProjectRoot walks upward from WorkspaceDir so gentle-ai can be
+	// findProjectRoot walks upward from WorkspaceDir so framework-ai can be
 	// invoked from any subdirectory (e.g. repo/internal/foo) and still inject
 	// workflows at the real project root. Skips silently if no root is found
 	// (e.g. running from home dir without a project).
@@ -657,13 +697,13 @@ func Inject(homeDir string, adapter agents.Adapter, sddMode model.SDDModeID, opt
 			}
 		}
 
-		if !hasOpenCodeAgentKey(settingsText, "gentle-orchestrator") {
+		if !hasOpenCodeAgentKey(settingsText, "framework-orchestrator") {
 			// In-memory check failed — try reading from disk as last resort.
 			if diskBytes, readErr := os.ReadFile(settingsPath); readErr == nil {
 				settingsText = string(diskBytes)
 			}
-			if !hasOpenCodeAgentKey(settingsText, "gentle-orchestrator") {
-				return InjectionResult{}, fmt.Errorf("post-check: %q missing gentle-orchestrator agent definition — OpenCode /sdd-* commands will fail", settingsPath)
+			if !hasOpenCodeAgentKey(settingsText, "framework-orchestrator") {
+				return InjectionResult{}, fmt.Errorf("post-check: %q missing framework-orchestrator agent definition — OpenCode /sdd-* commands will fail", settingsPath)
 			}
 		}
 		if hasOpenCodeAgentKey(settingsText, "sdd-orchestrator") {
@@ -729,7 +769,7 @@ func validateOpenClawWorkspacePath(workspaceDir string, adapter agents.Adapter) 
 	return nil
 }
 
-func inlineOpenCodeSDDPrompts(overlayBytes []byte, homeDir, settingsPath string, preserveExistingOrchestratorPrompt bool) ([]byte, error) {
+func inlineOpenCodeSDDPrompts(overlayBytes []byte, homeDir, settingsPath string, preserveExistingOrchestratorPrompt bool, orchestratorFilePath string) ([]byte, error) {
 	var overlay map[string]any
 	if err := json.Unmarshal(overlayBytes, &overlay); err != nil {
 		return nil, fmt.Errorf("unmarshal OpenCode SDD overlay: %w", err)
@@ -744,9 +784,9 @@ func inlineOpenCodeSDDPrompts(overlayBytes []byte, homeDir, settingsPath string,
 		return overlayBytes, nil
 	}
 
-	// Inline the orchestrator prompt (always inlined, not a file reference),
-	// unless an external strategy requested preserving the existing prompt.
-	orchestratorRaw, ok := agentsMap["gentle-orchestrator"]
+	// Reference the orchestrator prompt via {file:...} using the path provided
+	// by the caller instead of inlining the prompt text into opencode.json.
+	orchestratorRaw, ok := agentsMap["framework-orchestrator"]
 	if !ok {
 		return overlayBytes, nil
 	}
@@ -754,10 +794,22 @@ func inlineOpenCodeSDDPrompts(overlayBytes []byte, homeDir, settingsPath string,
 	if !ok {
 		return overlayBytes, nil
 	}
-	if preserveExistingOrchestratorPrompt {
-		existingPrompt, err := readOpenCodeAgentPrompt(settingsPath, "gentle-orchestrator")
+
+	if orchestratorFilePath != "" {
+		orchestratorMap["prompt"] = "{file:" + orchestratorFilePath + "}"
+	} else {
+		// Fallback to inline when no file path is available (should not happen in practice).
+		var orchestratorPrompt string
+		if preserveExistingOrchestratorPrompt {
+		existingPrompt, err := readOpenCodeAgentPrompt(settingsPath, "framework-orchestrator")
 		if err != nil {
 			return nil, err
+		}
+		if existingPrompt == "" {
+			existingPrompt, err = readOpenCodeAgentPrompt(settingsPath, "gentle-orchestrator")
+			if err != nil {
+				return nil, err
+			}
 		}
 		if existingPrompt == "" {
 			existingPrompt, err = readOpenCodeAgentPrompt(settingsPath, "sdd-orchestrator")
@@ -771,13 +823,14 @@ func inlineOpenCodeSDDPrompts(overlayBytes []byte, homeDir, settingsPath string,
 				return nil, err
 			}
 		}
-		if existingPrompt != "" {
-			orchestratorMap["prompt"] = migratePreservedOpenCodeOrchestratorPrompt(existingPrompt)
-		} else {
-			orchestratorMap["prompt"] = assets.MustRead(sddOrchestratorAsset(model.AgentOpenCode))
+			if existingPrompt != "" {
+				orchestratorPrompt = migratePreservedOpenCodeOrchestratorPrompt(existingPrompt)
+			}
 		}
-	} else {
-		orchestratorMap["prompt"] = assets.MustRead(sddOrchestratorAsset(model.AgentOpenCode))
+		if orchestratorPrompt == "" {
+			orchestratorPrompt = assets.MustRead(sddOrchestratorAsset(model.AgentOpenCode))
+		}
+		orchestratorMap["prompt"] = orchestratorPrompt
 	}
 
 	// Replace sub-agent prompt placeholders with {file:<absolutePath>} references.
@@ -815,9 +868,13 @@ func migratePreservedOpenCodeOrchestratorPrompt(prompt string) string {
 
 	replacer := strings.NewReplacer(
 		"Bind this to the dedicated `sdd-orchestrator` agent only.",
+		"Bind this to the dedicated `framework-orchestrator` agent only.",
 		"Bind this to the dedicated `gentle-orchestrator` agent only.",
+		"Bind this to the dedicated `framework-orchestrator` agent only.",
 		"agent.sdd-orchestrator.model",
+		"agent.framework-orchestrator.model",
 		"agent.gentle-orchestrator.model",
+		"agent.framework-orchestrator.model",
 	)
 	return ensurePreservedOpenCodeOrchestratorPreflight(replacer.Replace(prompt))
 }
@@ -825,7 +882,7 @@ func migratePreservedOpenCodeOrchestratorPrompt(prompt string) string {
 func ensurePreservedOpenCodeOrchestratorPreflight(prompt string) string {
 	preflight := `
 
-<!-- gentle-ai:sdd-session-preflight-migration -->
+<!-- framework-ai:sdd-session-preflight-migration -->
 ### SDD Session Preflight (HARD GATE)
 
 Before executing ANY SDD command or natural-language SDD request, ensure this session has an explicit ` + "`SDD Session Preflight`" + ` decision block.
@@ -898,7 +955,7 @@ Hard gate rules:
 - If the session has no preflight block, ask the localized user-facing preflight prompt above and STOP. Do not run init, delegate phases, edit files, or apply tasks in the same turn.
 - For a new feature request that says to use SDD, start at preflight -> init guard -> explore/proposal. Never launch ` + "`sdd-apply`" + ` just because the user asked to implement a feature.
 - In ` + "`interactive`" + ` mode, pause after each delegated phase returns, summarize the phase, ask before launching the next phase, and STOP. Match the user's language; for Spanish ask: "¿Querés ajustar algo o continuamos?". Do not run /sdd-ff phases back-to-back unless execution mode is ` + "`auto`" + `.
-<!-- /gentle-ai:sdd-session-preflight-migration -->
+<!-- /framework-ai:sdd-session-preflight-migration -->
 `
 
 	if strings.Contains(prompt, "### SDD Session Preflight (HARD GATE)") &&
@@ -911,8 +968,8 @@ Hard gate rules:
 		return prompt
 	}
 
-	start := "<!-- gentle-ai:sdd-session-preflight-migration -->"
-	end := "<!-- /gentle-ai:sdd-session-preflight-migration -->"
+	start := "<!-- framework-ai:sdd-session-preflight-migration -->"
+	end := "<!-- /framework-ai:sdd-session-preflight-migration -->"
 	if startIdx := strings.Index(prompt, start); startIdx >= 0 {
 		if relEndIdx := strings.Index(prompt[startIdx:], end); relEndIdx >= 0 {
 			endIdx := startIdx + relEndIdx + len(end)
@@ -1023,7 +1080,7 @@ func ensureClaudeSkillRegistryHook(settingsPath string) (bool, error) {
 		return false, err
 	}
 
-	const command = `gentle-ai skill-registry refresh --quiet --no-gitignore --cwd "${CLAUDE_PROJECT_DIR:-$PWD}" || true`
+	const command = `framework-ai skill-registry refresh --quiet --no-gitignore --cwd "${CLAUDE_PROJECT_DIR:-$PWD}" || true`
 	if claudeHookExists(root, command) {
 		return false, nil
 	}
@@ -1244,12 +1301,17 @@ func mergeJSONFile(path string, overlay []byte) (mergeJSONResult, error) {
 
 // migrateLegacyOpenCodeSDDOrchestrator removes legacy or accidentally renamed
 // base OpenCode SDD conductor agents. The base SDD coordinator is now the
-// gentle-orchestrator primary agent; named profile agents such as
+// framework-orchestrator primary agent; named profile agents such as
 // sdd-orchestrator-cheap intentionally remain untouched because they are
 // generated profile-specific coordinators. The old OpenCode "gentleman" agent
 // key is revoked and is removed during sync; if it clearly contains the old SDD
-// conductor prompt and no gentle-orchestrator exists yet, its prompt is migrated
+// conductor prompt and no framework-orchestrator exists yet, its prompt is migrated
 // before the revoked key is deleted.
+//
+// Handles three migration states:
+//   - Old legacy: sdd-orchestrator → framework-orchestrator
+//   - Current:    gentle-orchestrator → framework-orchestrator
+//   - New:        framework-orchestrator (already correct, no-op)
 func migrateLegacyOpenCodeSDDOrchestrator(baseJSON []byte) ([]byte, error) {
 	if len(strings.TrimSpace(string(baseJSON))) == 0 {
 		return baseJSON, nil
@@ -1270,20 +1332,30 @@ func migrateLegacyOpenCodeSDDOrchestrator(baseJSON []byte) ([]byte, error) {
 	}
 
 	legacy, hasLegacy := agentsMap["sdd-orchestrator"]
+	current, hasCurrent := agentsMap["gentle-orchestrator"]
 	revokedGentleman, hasRevokedGentleman := agentsMap["gentleman"]
 	gentlemanLooksLikeConductor := hasRevokedGentleman && looksLikeOpenCodeSDDConductor(revokedGentleman)
-	if !hasLegacy && !hasRevokedGentleman {
-		return baseJSON, nil
+
+	// Determine the best source for migration: current > legacy > gentleman
+	source := legacy
+	hasSource := hasLegacy
+	if hasCurrent {
+		source = current
+		hasSource = true
 	}
-	if !hasLegacy && gentlemanLooksLikeConductor {
-		legacy = revokedGentleman
-		hasLegacy = true
+	if !hasSource && gentlemanLooksLikeConductor {
+		source = revokedGentleman
+		hasSource = true
 	}
 
-	if _, hasGentleOrchestrator := agentsMap["gentle-orchestrator"]; !hasGentleOrchestrator && hasLegacy {
-		agentsMap["gentle-orchestrator"] = legacy
+	_, hasFramework := agentsMap["framework-orchestrator"]
+	if !hasFramework && hasSource {
+		agentsMap["framework-orchestrator"] = source
 	}
+
+	// Delete legacy and current keys after migration.
 	delete(agentsMap, "sdd-orchestrator")
+	delete(agentsMap, "gentle-orchestrator")
 	if hasRevokedGentleman {
 		delete(agentsMap, "gentleman")
 	}
@@ -1417,25 +1489,25 @@ func hasSDDOrchestrator(content string) bool {
 func sddOrchestratorAsset(agent model.AgentID) string {
 	switch agent {
 	case model.AgentGeminiCLI:
-		return "gemini/sdd-orchestrator.md"
+		return "gemini/framework-orchestrator.md"
 	case model.AgentCodex:
-		return "codex/sdd-orchestrator.md"
+		return "codex/framework-orchestrator.md"
 	case model.AgentAntigravity:
-		return "antigravity/sdd-orchestrator.md"
+		return "antigravity/framework-orchestrator.md"
 	case model.AgentWindsurf:
-		return "windsurf/sdd-orchestrator.md"
+		return "windsurf/framework-orchestrator.md"
 	case model.AgentCursor:
-		return "cursor/sdd-orchestrator.md"
+		return "cursor/framework-orchestrator.md"
 	case model.AgentKimi:
-		return "kimi/sdd-orchestrator.md"
+		return "kimi/framework-orchestrator.md"
 	case model.AgentQwenCode:
-		return "qwen/sdd-orchestrator.md"
+		return "qwen/framework-orchestrator.md"
 	case model.AgentKiroIDE:
-		return "kiro/sdd-orchestrator.md"
+		return "kiro/framework-orchestrator.md"
 	case model.AgentOpenCode:
-		return "opencode/sdd-orchestrator.md"
+		return "opencode/framework-orchestrator.md"
 	default:
-		return "generic/sdd-orchestrator.md"
+		return "generic/framework-orchestrator.md"
 	}
 }
 
@@ -1464,7 +1536,7 @@ func injectFileAppend(homeDir string, adapter agents.Adapter) (InjectionResult, 
 		existing = stripBareOrchestratorForFilePrompt(existing)
 	}
 
-	updated := filemerge.InjectMarkdownSection(existing, "sdd-orchestrator", content)
+	updated := filemerge.InjectMarkdownSection(existing, "framework-orchestrator", content)
 
 	writeResult, err := filemerge.WriteFileAtomic(promptPath, []byte(updated), 0o644)
 	if err != nil {
@@ -1475,7 +1547,7 @@ func injectFileAppend(homeDir string, adapter agents.Adapter) (InjectionResult, 
 }
 
 func hasLegacyBareOrchestrator(content string) bool {
-	markedIdx := strings.Index(content, "<!-- gentle-ai:sdd-orchestrator -->")
+	markedIdx := strings.Index(content, "<!-- framework-ai:framework-orchestrator -->")
 	if markedIdx >= 0 {
 		prefix := content[:markedIdx]
 		if strings.Contains(prefix, "# Agent Teams Lite — Orchestrator Instructions") {
@@ -1513,10 +1585,10 @@ func hasLegacyBareOrchestrator(content string) bool {
 //
 // Strategy:
 //   - start at the first known orchestrator heading
-//   - end at the next managed marker ("<!-- gentle-ai:") if present, else EOF
+//   - end at the next managed marker ("<!-- framework-ai:") if present, else EOF
 //   - preserve content before/after and normalize surrounding blank lines
 func stripBareOrchestratorForFilePrompt(content string) string {
-	if markedIdx := strings.Index(content, "<!-- gentle-ai:sdd-orchestrator -->"); markedIdx >= 0 {
+	if markedIdx := strings.Index(content, "<!-- framework-ai:framework-orchestrator -->"); markedIdx >= 0 {
 		prefix := content[:markedIdx]
 		if start := strings.Index(prefix, "# Agent Teams Lite — Orchestrator Instructions"); start >= 0 {
 			before := strings.TrimRight(content[:start], "\n")
@@ -1547,7 +1619,7 @@ func stripBareOrchestratorForFilePrompt(content string) string {
 	}
 
 	end := len(content)
-	if rel := strings.Index(content[start:], "<!-- gentle-ai:"); rel >= 0 {
+	if rel := strings.Index(content[start:], "<!-- framework-ai:"); rel >= 0 {
 		end = start + rel
 	}
 
@@ -1651,7 +1723,7 @@ func stripBareOrchestratorSection(content string) string {
 
 func injectMarkdownSections(homeDir string, adapter agents.Adapter, assignments map[string]model.ClaudeModelAlias) (InjectionResult, error) {
 	promptPath := adapter.SystemPromptFile(homeDir)
-	content := assets.MustRead("claude/sdd-orchestrator.md")
+	content := assets.MustRead("claude/framework-orchestrator.md")
 	if len(assignments) > 0 {
 		var err error
 		content, err = injectClaudeModelAssignments(content, assignments)
@@ -1671,11 +1743,11 @@ func injectMarkdownSections(homeDir string, adapter agents.Adapter, assignments 
 	// If bare (un-marked) orchestrator content exists but the HTML markers are
 	// not present, strip the bare block first. This migrates legacy files to the
 	// canonical marker-based state without duplicating the section.
-	if hasSDDOrchestrator(existing) && !strings.Contains(existing, "<!-- gentle-ai:sdd-orchestrator -->") {
+	if hasSDDOrchestrator(existing) && !strings.Contains(existing, "<!-- framework-ai:framework-orchestrator -->") {
 		existing = stripBareOrchestratorSection(existing)
 	}
 
-	updated := filemerge.InjectMarkdownSection(existing, "sdd-orchestrator", content)
+	updated := filemerge.InjectMarkdownSection(existing, "framework-orchestrator", content)
 
 	writeResult, err := filemerge.WriteFileAtomic(promptPath, []byte(updated), 0o644)
 	if err != nil {
@@ -1710,8 +1782,8 @@ var claudeModelAssignmentReasons = map[string]string{
 }
 
 func injectClaudeModelAssignments(content string, assignments map[string]model.ClaudeModelAlias) (string, error) {
-	const openMarker = "<!-- gentle-ai:sdd-model-assignments -->"
-	const closeMarker = "<!-- /gentle-ai:sdd-model-assignments -->"
+	const openMarker = "<!-- framework-ai:sdd-model-assignments -->"
+	const closeMarker = "<!-- /framework-ai:sdd-model-assignments -->"
 
 	start := strings.Index(content, openMarker)
 	end := strings.Index(content, closeMarker)
@@ -1835,29 +1907,39 @@ func injectModelAssignments(overlayBytes []byte, assignments map[string]model.Mo
 	return append(result, '\n'), nil
 }
 
-// normalizeOpenCodeSDDModelAssignments accepts the historical
-// sdd-orchestrator assignment key as an input alias, but writes it to the
-// current base coordinator key: gentle-orchestrator. Named profile keys remain unchanged.
+// normalizeOpenCodeSDDModelAssignments accepts historical sdd-orchestrator and
+// gentle-orchestrator assignment keys as input aliases, but writes them to the
+// current base coordinator key: framework-orchestrator. Named profile keys remain unchanged.
 func normalizeOpenCodeSDDModelAssignments(assignments map[string]model.ModelAssignment) map[string]model.ModelAssignment {
 	if len(assignments) == 0 {
 		return assignments
 	}
-	legacyAssignment, hasLegacy := assignments["sdd-orchestrator"]
-	if !hasLegacy {
+	if _, hasFramework := assignments["framework-orchestrator"]; hasFramework {
 		return assignments
 	}
-	if _, hasGentleOrchestrator := assignments["gentle-orchestrator"]; hasGentleOrchestrator {
+
+	// Prefer current gentle-orchestrator over legacy sdd-orchestrator.
+	var source model.ModelAssignment
+	var hasSource bool
+	if a, ok := assignments["gentle-orchestrator"]; ok {
+		source = a
+		hasSource = true
+	} else if a, ok := assignments["sdd-orchestrator"]; ok {
+		source = a
+		hasSource = true
+	}
+	if !hasSource {
 		return assignments
 	}
 
 	normalized := make(map[string]model.ModelAssignment, len(assignments))
 	for key, assignment := range assignments {
-		if key == "sdd-orchestrator" {
+		if key == "sdd-orchestrator" || key == "gentle-orchestrator" {
 			continue
 		}
 		normalized[key] = assignment
 	}
-	normalized["gentle-orchestrator"] = legacyAssignment
+	normalized["framework-orchestrator"] = source
 	return normalized
 }
 

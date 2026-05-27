@@ -2,13 +2,18 @@
 schema: spec-driven
 
 context: |
-  Tech stack: Go 1.25.10, Bubbletea TUI (charmbracelet/bubbletea v1.3.10), lipgloss v1.1.0
-  Architecture: cmd/ entrypoints, internal/ packages (agents, tui, model, pipeline, catalog, system, planner, verify, update, opencode, installcmd, cli, app, components, state, backup, assets, agentbuilder)
-  Feature branch: feat/claude-contextual-skill-loading — contextual skill loading from Claude Code
+  Tech stack: Go 1.25.10, Bubbletea TUI (charmbracelet/bubbletea v1.3.10, bubbles v1.0.0, lipgloss v1.1.0)
+  Architecture: cmd/ entrypoints, internal/ packages (agents, tui, model, pipeline, catalog, system, planner, verify, update, opencode, installcmd, cli, app, components, state, backup, assets, agentbuilder, skillregistry, versions)
   Agents: multi-agent support (claude, opencode, cursor, codex, gemini, vscode, windsurf, antigravity)
-  Skills catalog: internal/catalog/skills.go — known skill registry; project skills in skills/
-  Build: goreleaser (.goreleaser.yaml), CI: GitHub Actions (ci.yml, pr-check.yml, release.yml)
-  Style: gofmt (standard), go vet, no golangci-lint config found
+  Skills catalog: internal/catalog/skills.go + internal/skillregistry/registry.go; project skills in skills/
+  Build: goreleaser (.goreleaser.yaml) for linux/darwin/windows amd64+arm64; Homebrew tap + Scoop bucket
+  CI: GitHub Actions (ci.yml, pr-check.yml, release.yml)
+  Style: gofmt (standard), go vet; no golangci-lint config found
+  Review budget: 800 changed lines (confirmed preflight D2)
+  PR validation: requires issue reference (closes/fixes/resolves #N), status:approved label, exactly one type:* label
+  SDD pace: A1 Interactive (confirmed)
+  SDD artifacts: B1 OpenSpec (confirmed)
+  SDD PRs: C1 Ask me (confirmed)
 
 strict_tdd: true
 
@@ -16,6 +21,7 @@ rules:
   proposal:
     - Include rollback plan for risky changes
     - Identify affected internal/ packages
+    - Flag when change may exceed 800-line review budget
   specs:
     - Use Given/When/Then format for scenarios
     - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
@@ -26,22 +32,25 @@ rules:
     - Group tasks by phase (infrastructure, implementation, testing)
     - Use hierarchical numbering (1.1, 1.2, etc.)
     - Keep tasks small enough to complete in one session
+    - Respect 800-line PR budget; plan chained PRs when forecast exceeds limit
   apply:
-    - Load gentleman-bubbletea skill for TUI work (internal/tui/)
-    - Load gentleman-installer skill for installation steps
-    - Load gentleman-system skill for OS/system detection
     - Load go-testing skill when writing tests
+    - Load framework-ai-branch-pr skill when creating PRs
+    - Load framework-ai-chained-pr skill when change may exceed 800 lines
     - Follow existing code patterns in internal/ packages
+    - Run go test ./... after every meaningful change
+    - Ask user before creating PRs (C1 confirmed)
   verify:
     - Run: go test ./...
     - Run: go vet ./...
     - Compare implementation against every spec scenario
+    - Ensure PR links an approved issue and carries a type:* label
   archive:
     - Warn before merging destructive deltas (large removals)
 
 testing:
   strict_tdd: true
-  detected: "2026-05-05"
+  detected: "2026-05-27"
 
   runner:
     command: "go test ./..."
@@ -51,18 +60,18 @@ testing:
     unit:
       available: true
       tool: "go test"
-      note: "132 test files across internal/ packages"
+      note: "151 test files across internal/ packages"
     integration:
       available: true
       tool: "net/http/httptest (built-in)"
     e2e:
       available: true
       tool: "Docker-based E2E (e2e/docker-test.sh)"
-      note: "Dockerfile.ubuntu, Dockerfile.fedora, Dockerfile.arch — triggered by RUN_FULL_E2E=1"
+      note: "Tier 1 (binary+dry-run) on PRs; Tier 1+2+3 on push/schedule. Platforms: ubuntu, fedora, arch"
     tui:
       available: true
-      tool: "bubbletea tea.KeyMsg simulation (no teatest — direct model.Update() testing)"
-      note: "TUI tests use direct Bubbletea model updates, not teatest library"
+      tool: "bubbletea tea.KeyMsg simulation (direct model.Update() testing)"
+      note: "No teatest dependency; TUI tests use direct Bubbletea model updates"
 
   coverage:
     available: true

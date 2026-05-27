@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/internal/model"
-	"github.com/gentleman-programming/gentle-ai/internal/system"
-	"github.com/gentleman-programming/gentle-ai/internal/versions"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/model"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/system"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/versions"
 )
 
 func TestValidateGoForModuleInstall(t *testing.T) {
@@ -529,6 +529,15 @@ func TestValidateAgentInstallPreflight(t *testing.T) {
 	}
 }
 
+func TestResolveCodeGraphInstall(t *testing.T) {
+	profile := system.PlatformProfile{OS: "darwin", PackageManager: "brew"}
+	got := resolveCodeGraphInstall(profile)
+	want := CommandSequence{{"sh", "-c", "curl -fsSL https://raw.githubusercontent.com/colbymchenry/codegraph/main/install.sh | sh"}}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("resolveCodeGraphInstall() = %v, want %v", got, want)
+	}
+}
+
 func TestResolveComponentInstall(t *testing.T) {
 	r := NewResolver()
 
@@ -544,6 +553,12 @@ func TestResolveComponentInstall(t *testing.T) {
 			profile:   system.PlatformProfile{OS: "darwin", PackageManager: "brew"},
 			component: model.ComponentEngram,
 			want:      CommandSequence{{"brew", "tap", "Gentleman-Programming/homebrew-tap"}, {"brew", "install", "engram"}},
+		},
+		{
+			name:      "codegraph returns curl script regardless of platform",
+			profile:   system.PlatformProfile{OS: "linux", LinuxDistro: system.LinuxDistroUbuntu, PackageManager: "apt"},
+			component: model.ComponentCodeGraph,
+			want:      CommandSequence{{"sh", "-c", "curl -fsSL https://raw.githubusercontent.com/colbymchenry/codegraph/main/install.sh | sh"}},
 		},
 		// Linux and Windows engram now use DownloadLatestBinary() — resolver returns error.
 		// These cases are handled by run.go's componentApplyStep directly.

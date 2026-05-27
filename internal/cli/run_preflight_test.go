@@ -4,9 +4,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/internal/installcmd"
-	"github.com/gentleman-programming/gentle-ai/internal/model"
-	"github.com/gentleman-programming/gentle-ai/internal/system"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/installcmd"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/model"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/system"
 )
 
 func TestCheckDependenciesStepFailsWhenKimiUVMissing(t *testing.T) {

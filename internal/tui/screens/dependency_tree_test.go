@@ -5,9 +5,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/internal/model"
-	"github.com/gentleman-programming/gentle-ai/internal/planner"
-	"github.com/gentleman-programming/gentle-ai/internal/versions"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/model"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/planner"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/versions"
 )
 
 func TestRenderDependencyTreePiOnlyEngramPlanShowsComponentAndPiInstallCopy(t *testing.T) {

@@ -43,6 +43,7 @@ const (
 	ComponentTheme              ComponentID = "theme"
 	ComponentClaudeTheme        ComponentID = "claude-theme"
 	ComponentOpenCodeGentleLogo ComponentID = "opencode-gentle-logo"
+	ComponentCodeGraph          ComponentID = "codegraph"
 )
 
 type UninstallMode string
@@ -74,6 +75,8 @@ const (
 	SkillSDDTasks        SkillID = "sdd-tasks"
 	SkillSDDArchive      SkillID = "sdd-archive"
 	SkillSDDOnboard      SkillID = "sdd-onboard"
+	SkillSDDInspect      SkillID = "sdd-inspect"
+	SkillSDDOptimize     SkillID = "sdd-optimize"
 	SkillGoTesting       SkillID = "go-testing"
 	SkillCreator         SkillID = "skill-creator"
 	SkillImprover        SkillID = "skill-improver"
@@ -90,16 +93,17 @@ const (
 type PersonaID string
 
 const (
-	PersonaGentleman PersonaID = "gentleman"
-	PersonaNeutral   PersonaID = "neutral"
-	PersonaCustom    PersonaID = "custom"
+	PersonaRickSanchez  PersonaID = "rick-sanchez"
+	PersonaGentleman    PersonaID = "gentleman"
+	PersonaNeutral      PersonaID = "neutral"
+	PersonaCustom       PersonaID = "custom"
 )
 
 // SystemPromptStrategy defines how an agent's system prompt file is managed.
 type SystemPromptStrategy int
 
 const (
-	// StrategyMarkdownSections uses <!-- gentle-ai:ID --> markers to inject sections
+	// StrategyMarkdownSections uses <!-- framework-ai:ID --> markers to inject sections
 	// into an existing file without clobbering user content (Claude Code CLAUDE.md).
 	StrategyMarkdownSections SystemPromptStrategy = iota
 	// StrategyFileReplace replaces the entire system prompt file (OpenCode AGENTS.md).
@@ -134,6 +138,7 @@ const (
 type PresetID string
 
 const (
+	PresetFullRick      PresetID = "full-rick"
 	PresetFullGentleman PresetID = "full-gentleman"
 	PresetEcosystemOnly PresetID = "ecosystem-only"
 	PresetMinimal       PresetID = "minimal"

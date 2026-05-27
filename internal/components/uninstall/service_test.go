@@ -8,9 +8,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gentleman-programming/gentle-ai/internal/agents"
-	"github.com/gentleman-programming/gentle-ai/internal/backup"
-	"github.com/gentleman-programming/gentle-ai/internal/model"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/agents"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/backup"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/model"
 )
 
 type stubSnapshotter struct{}
@@ -44,7 +44,7 @@ func TestExecutePlanReportsManualCleanupForNonEmptyDirectory(t *testing.T) {
 		t.Fatalf("WriteFile() error = %v", err)
 	}
 
-	statePath := filepath.Join(homeDir, ".gentle-ai", "state.json")
+	statePath := filepath.Join(homeDir, ".framework-ai", "state.json")
 	if err := os.MkdirAll(filepath.Dir(statePath), 0o755); err != nil {
 		t.Fatalf("MkdirAll(state dir) error = %v", err)
 	}
@@ -91,7 +91,7 @@ func TestComponentOperationsSDD_RemovesBaseAndProfileAgentsFromSettings(t *testi
 
 	initial := []byte(`{
 	  "agent": {
-	    "sdd-orchestrator": {"mode": "primary", "model": "anthropic:claude-sonnet-4"},
+	    "framework-orchestrator": {"mode": "primary", "model": "anthropic:claude-sonnet-4"},
 	    "sdd-apply": {"mode": "subagent", "model": "anthropic:claude-sonnet-4"},
 	    "sdd-onboard": {"mode": "subagent", "model": "anthropic:claude-sonnet-4"},
 	    "sdd-verify": {"mode": "subagent", "model": "anthropic:claude-sonnet-4"},
@@ -143,7 +143,7 @@ func TestComponentOperationsSDD_RemovesBaseAndProfileAgentsFromSettings(t *testi
 	}
 
 	for _, removedKey := range []string{
-		"sdd-orchestrator",
+		"framework-orchestrator",
 		"sdd-apply",
 		"sdd-onboard",
 		"sdd-verify",
@@ -186,7 +186,7 @@ func TestComponentOperationsSDD_RemovesOnlySelectedProfilesFromSettings(t *testi
 
 	initial := []byte(`{
 	  "agent": {
-	    "sdd-orchestrator": {"mode": "primary", "model": "anthropic:claude-sonnet-4"},
+	    "framework-orchestrator": {"mode": "primary", "model": "anthropic:claude-sonnet-4"},
 	    "sdd-apply": {"mode": "subagent", "model": "anthropic:claude-sonnet-4"},
 	    "sdd-orchestrator-cheap": {"mode": "primary", "model": "openai:gpt-4.1-mini"},
 	    "sdd-apply-cheap": {"mode": "subagent", "model": "openai:gpt-4.1-mini"},
@@ -322,7 +322,7 @@ func TestComponentOperationsSDD_OpenCodeRemovesManagedPluginSourcesAndModelVaria
 		t.Fatalf("WriteFile(%q) error = %v", thirdPartyPluginPath, err)
 	}
 
-	cacheDir := filepath.Join(homeDir, ".gentle-ai", "cache")
+	cacheDir := filepath.Join(homeDir, ".framework-ai", "cache")
 	if err := os.MkdirAll(cacheDir, 0o755); err != nil {
 		t.Fatalf("MkdirAll(cacheDir) error = %v", err)
 	}
@@ -367,7 +367,7 @@ func TestComponentOperationsSDD_OpenCodePreservesEmptyModelVariantsCacheDirector
 		t.Fatal("openCode adapter not found in registry")
 	}
 
-	cacheDir := filepath.Join(homeDir, ".gentle-ai", "cache")
+	cacheDir := filepath.Join(homeDir, ".framework-ai", "cache")
 	if err := os.MkdirAll(cacheDir, 0o755); err != nil {
 		t.Fatalf("MkdirAll(cacheDir) error = %v", err)
 	}
@@ -559,7 +559,7 @@ func TestComponentOperationsSDD_ClaudeRemovesSkillRegistryHook(t *testing.T) {
       {
         "matcher": "",
         "hooks": [
-          {"type": "command", "command": "gentle-ai skill-registry refresh --quiet --no-gitignore --cwd \"${CLAUDE_PROJECT_DIR:-$PWD}\" || true"},
+          {"type": "command", "command": "framework-ai skill-registry refresh --quiet --no-gitignore --cwd \"${CLAUDE_PROJECT_DIR:-$PWD}\" || true"},
           {"type": "command", "command": "echo keep"}
         ]
       }
@@ -592,10 +592,88 @@ func TestComponentOperationsSDD_ClaudeRemovesSkillRegistryHook(t *testing.T) {
 		t.Fatal(err)
 	}
 	text := string(raw)
-	if strings.Contains(text, "gentle-ai skill-registry refresh") {
+	if strings.Contains(text, "framework-ai skill-registry refresh") {
 		t.Fatalf("managed hook should be removed:\n%s", text)
 	}
 	if !strings.Contains(text, "echo keep") || !strings.Contains(text, "echo pre") {
 		t.Fatalf("unrelated hooks should be preserved:\n%s", text)
+	}
+}
+
+func TestComponentOperationsCodeGraph_RemovesMCPAndPromptSections(t *testing.T) {
+	homeDir := t.TempDir()
+	workspaceDir := t.TempDir()
+
+	svc, err := NewService(homeDir, workspaceDir, "dev")
+	if err != nil {
+		t.Fatalf("NewService() error = %v", err)
+	}
+
+	adapter, err := agents.NewAdapter("claude-code")
+	if err != nil {
+		t.Fatalf("NewAdapter() error = %v", err)
+	}
+
+	// Pre-create files with CodeGraph content.
+	mcpPath := adapter.MCPConfigPath(homeDir, "codegraph")
+	if err := os.MkdirAll(filepath.Dir(mcpPath), 0o755); err != nil {
+		t.Fatalf("MkdirAll() error = %v", err)
+	}
+	if err := os.WriteFile(mcpPath, []byte(`{"command":"codegraph","args":["serve","--mcp"]}`), 0o644); err != nil {
+		t.Fatalf("WriteFile(mcp) error = %v", err)
+	}
+
+	promptPath := adapter.SystemPromptFile(homeDir)
+	if err := os.MkdirAll(filepath.Dir(promptPath), 0o755); err != nil {
+		t.Fatalf("MkdirAll(prompt) error = %v", err)
+	}
+	if err := os.WriteFile(promptPath, []byte("# Hello\n\n<!-- framework-ai:codegraph -->\nUse codegraph.\n<!-- /framework-ai:codegraph -->\n\n# Bye\n"), 0o644); err != nil {
+		t.Fatalf("WriteFile(prompt) error = %v", err)
+	}
+
+	ops, targets, err := svc.componentOperations(adapter, model.ComponentCodeGraph)
+	if err != nil {
+		t.Fatalf("componentOperations() error = %v", err)
+	}
+
+	// Verify targets include both files.
+	targetSet := make(map[string]bool)
+	for _, t := range targets {
+		targetSet[t] = true
+	}
+	if !targetSet[mcpPath] {
+		t.Fatalf("targets missing mcp path %q", mcpPath)
+	}
+	if !targetSet[promptPath] {
+		t.Fatalf("targets missing prompt path %q", promptPath)
+	}
+
+	// Execute operations.
+	for _, op := range ops {
+		_, _, err := op.apply(op.path)
+		if err != nil {
+			t.Fatalf("op.apply(%q) error = %v", op.path, err)
+		}
+	}
+
+	// Verify MCP file is removed.
+	if _, err := os.Stat(mcpPath); !os.IsNotExist(err) {
+		t.Fatalf("mcp file %q should be removed", mcpPath)
+	}
+
+	// Verify prompt section is stripped but other content preserved.
+	promptRaw, err := os.ReadFile(promptPath)
+	if err != nil {
+		t.Fatalf("ReadFile(prompt) error = %v", err)
+	}
+	promptText := string(promptRaw)
+	if strings.Contains(promptText, "framework-ai:codegraph") {
+		t.Fatalf("prompt should not contain codegraph markers; got:\n%s", promptText)
+	}
+	if !strings.Contains(promptText, "# Hello") {
+		t.Fatalf("prompt should preserve unrelated content; got:\n%s", promptText)
+	}
+	if !strings.Contains(promptText, "# Bye") {
+		t.Fatalf("prompt should preserve unrelated content; got:\n%s", promptText)
 	}
 }

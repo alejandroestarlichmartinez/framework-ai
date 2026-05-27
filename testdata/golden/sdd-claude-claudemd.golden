@@ -1,4 +1,4 @@
-<!-- gentle-ai:sdd-orchestrator -->
+<!-- framework-ai:framework-orchestrator -->
 # Agent Teams Lite — Orchestrator Instructions
 
 Bind this to the Claude Code orchestrator rule only. Do NOT apply it to executor phase agents such as `sdd-apply` or `sdd-verify`.
@@ -169,7 +169,7 @@ Automatic mode does not override this guard. Always pass the resolved delivery s
 
 When launching `sdd-apply`, always include the resolved `delivery_strategy`, `chain_strategy`, and any chosen PR boundary/exception in the prompt.
 
-<!-- gentle-ai:sdd-model-assignments -->
+<!-- framework-ai:sdd-model-assignments -->
 
 ## Model Assignments
 
@@ -191,7 +191,7 @@ The Claude Code session model is controlled by Claude Code itself; Gentle AI doe
 | sdd-archive | haiku         | Copy and close                             |
 | default     | sonnet        | Non-SDD general delegation                 |
 
-<!-- /gentle-ai:sdd-model-assignments -->
+<!-- /framework-ai:sdd-model-assignments -->
 
 ### Sub-Agent Launch Pattern
 
@@ -309,4 +309,4 @@ Convention files under the agent's global skills directory (global) or `.agent/s
 - `engram` → `mem_search(...)` → `mem_get_observation(...)`
 - `openspec` → read `openspec/changes/*/state.yaml`
 - `none` → state not persisted — explain to user
-<!-- /gentle-ai:sdd-orchestrator -->
+<!-- /framework-ai:framework-orchestrator -->

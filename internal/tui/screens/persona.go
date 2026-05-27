@@ -3,18 +3,19 @@ package screens
 import (
 	"strings"
 
-	"github.com/gentleman-programming/gentle-ai/internal/model"
-	"github.com/gentleman-programming/gentle-ai/internal/tui/styles"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/model"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/tui/styles"
 )
 
 func PersonaOptions() []model.PersonaID {
-	return []model.PersonaID{model.PersonaGentleman, model.PersonaNeutral, model.PersonaCustom}
+	return []model.PersonaID{model.PersonaGentleman, model.PersonaRickSanchez, model.PersonaNeutral, model.PersonaCustom}
 }
 
 var personaDescriptions = map[model.PersonaID]string{
-	model.PersonaGentleman: "Managed Gentleman persona with teaching-first guidance",
-	model.PersonaNeutral:   "Managed neutral persona with the same guidance and less regional tone",
-	model.PersonaCustom:    "Keep your existing persona unmanaged; gentle-ai does not inject a persona",
+	model.PersonaGentleman:    "Managed Gentleman persona with teaching-first guidance",
+	model.PersonaRickSanchez:  "Managed Rick Sanchez persona — cynical genius who teaches architecture with scientific flair",
+	model.PersonaNeutral:      "Managed neutral persona with the same guidance and less regional tone",
+	model.PersonaCustom:       "Keep your existing persona unmanaged; framework-ai does not inject a persona",
 }
 
 func RenderPersona(selected model.PersonaID, cursor int) string {

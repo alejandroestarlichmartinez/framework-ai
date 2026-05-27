@@ -23,7 +23,7 @@ This appendix maps main docs and source files to responsibilities. Use it to mak
 
 | Source path | Responsibility |
 |---|---|
-| `cmd/gentle-ai/main.go` | Binary entrypoint and version handoff. |
+| `cmd/framework-ai/main.go` | Binary entrypoint and version handoff. |
 | `internal/app/` | Command dispatch, help, app-level version/update routing. |
 | `internal/cli/run.go` | Install flow orchestration. |
 | `internal/cli/sync.go` | Managed config sync flow and SDD profile flags. |
@@ -39,7 +39,7 @@ This appendix maps main docs and source files to responsibilities. Use it to mak
 | `internal/components/sdd/` | SDD prompt/profile generation and injection. |
 | `internal/components/opencodeplugin/` | Optional OpenCode plugin registration. |
 | `internal/agents/` | Per-agent adapter strategies and paths. |
-| `internal/state/state.go` | Persisted install state in `~/.gentle-ai/state.json`. |
+| `internal/state/state.go` | Persisted install state in `~/.framework-ai/state.json`. |
 | `internal/update/` | Update checks and upgrade execution. |
 | `internal/verify/` | Post-apply readiness reporting. |
 | `e2e/` | Docker E2E harness. |

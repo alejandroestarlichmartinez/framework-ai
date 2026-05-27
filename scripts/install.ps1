@@ -1,19 +1,19 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    Gentle-AI — Install Script for Windows
+    Framework-AI — Install Script for Windows
     Ecosystem, Frameworks, Workflows for AI coding agents.
 
 .DESCRIPTION
-    Downloads and installs the gentle-ai binary for Windows.
+    Downloads and installs the framework-ai binary for Windows.
     Supports installation via Go or pre-built binary from GitHub Releases.
 
 .EXAMPLE
     # Run directly:
-    irm https://raw.githubusercontent.com/Gentleman-Programming/gentle-ai/main/scripts/install.ps1 | iex
+    irm https://raw.githubusercontent.com/alejandroestarlichmartinez/framework-ai/main/scripts/install.ps1 | iex
 
     # Or download and run:
-    Invoke-WebRequest -Uri https://raw.githubusercontent.com/Gentleman-Programming/gentle-ai/main/scripts/install.ps1 -OutFile install.ps1
+    Invoke-WebRequest -Uri https://raw.githubusercontent.com/alejandroestarlichmartinez/framework-ai/main/scripts/install.ps1 -OutFile install.ps1
     .\install.ps1
 
     # Force a specific method:
@@ -36,9 +36,9 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$GITHUB_OWNER = "Gentleman-Programming"
-$GITHUB_REPO = "gentle-ai"
-$BINARY_NAME = "gentle-ai"
+$GITHUB_OWNER = "alejandroestarlichmartinez"
+$GITHUB_REPO = "framework-ai"
+$BINARY_NAME = "framework-ai"
 
 # ============================================================================
 # Logging helpers
@@ -68,7 +68,7 @@ function Show-Banner {
     Write-Host " | |_| |  __/ | | | |_| |  __/_____/ ___ \ | | " -ForegroundColor Cyan
     Write-Host "  \____|\___|_| |_|\__|_|\___|    /_/   \_\___|" -ForegroundColor Cyan
     Write-Host ""
-    Write-Host "  Gentle-AI — Ecosystem, Frameworks, Workflows" -ForegroundColor DarkGray
+    Write-Host "  Framework-AI — Ecosystem, Frameworks, Workflows" -ForegroundColor DarkGray
     Write-Host ""
 }
 
@@ -167,7 +167,7 @@ function Get-LatestVersion {
     $url = "https://api.github.com/repos/$GITHUB_OWNER/$GITHUB_REPO/releases/latest"
 
     try {
-        $response = Invoke-RestMethod -Uri $url -Headers @{ "User-Agent" = "gentle-ai-installer" }
+        $response = Invoke-RestMethod -Uri $url -Headers @{ "User-Agent" = "framework-ai-installer" }
     } catch {
         Stop-WithError "Failed to fetch latest release. Rate limited? Try again later or use -Method go"
     }
@@ -193,7 +193,7 @@ function Install-ViaBinary {
     $downloadUrl = "https://github.com/$GITHUB_OWNER/$GITHUB_REPO/releases/download/$version/$archiveName"
     $checksumsUrl = "https://github.com/$GITHUB_OWNER/$GITHUB_REPO/releases/download/$version/checksums.txt"
 
-    $tmpDir = Join-Path $env:TEMP "gentle-ai-install-$(Get-Random)"
+    $tmpDir = Join-Path $env:TEMP "framework-ai-install-$(Get-Random)"
     New-Item -ItemType Directory -Path $tmpDir -Force | Out-Null
 
     try {
@@ -251,7 +251,7 @@ function Install-ViaBinary {
         # Determine install directory
         $installDir = $InstallDir
         if (-not $installDir) {
-            $installDir = Join-Path $env:LOCALAPPDATA "gentle-ai\bin"
+            $installDir = Join-Path $env:LOCALAPPDATA "framework-ai\bin"
         }
 
         if (-not (Test-Path $installDir)) {
@@ -301,7 +301,7 @@ function Test-Installation {
         $gopath = & go env GOPATH 2>$null
     }
     $locations = @(
-        (Join-Path $env:LOCALAPPDATA "gentle-ai\bin\$BINARY_NAME.exe")
+        (Join-Path $env:LOCALAPPDATA "framework-ai\bin\$BINARY_NAME.exe")
     )
     if ($gopath) {
         $locations += (Join-Path $gopath "bin\$BINARY_NAME.exe")

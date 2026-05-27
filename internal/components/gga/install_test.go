@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/internal/system"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/system"
 )
 
 // resolveGitBashForTest derives the Git Bash path the same way the installcmd

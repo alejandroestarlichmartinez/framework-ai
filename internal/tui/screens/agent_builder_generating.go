@@ -3,7 +3,7 @@ package screens
 import (
 	"strings"
 
-	"github.com/gentleman-programming/gentle-ai/internal/tui/styles"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/tui/styles"
 )
 
 // RenderABGenerating renders the generation-in-progress (or error) screen.

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gentleman-programming/gentle-ai/internal/tui/styles"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/tui/styles"
 )
 
 type ProgressItem struct {

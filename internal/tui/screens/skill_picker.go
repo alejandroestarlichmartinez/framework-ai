@@ -3,9 +3,9 @@ package screens
 import (
 	"strings"
 
-	"github.com/gentleman-programming/gentle-ai/internal/components/skills"
-	"github.com/gentleman-programming/gentle-ai/internal/model"
-	"github.com/gentleman-programming/gentle-ai/internal/tui/styles"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/components/skills"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/model"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/tui/styles"
 )
 
 // sddSkillIDs are the SDD orchestrator skills shown in the first group.
@@ -20,6 +20,8 @@ var sddSkillIDs = []model.SkillID{
 	model.SkillSDDVerify,
 	model.SkillSDDArchive,
 	model.SkillSDDOnboard,
+	model.SkillSDDInspect,
+	model.SkillSDDOptimize,
 	model.SkillJudgmentDay,
 }
 
@@ -43,6 +45,8 @@ var skillLabels = map[model.SkillID]string{
 	model.SkillSDDVerify:     "SDD Verify",
 	model.SkillSDDArchive:    "SDD Archive",
 	model.SkillSDDOnboard:    "SDD Onboard",
+	model.SkillSDDInspect:    "SDD Inspect",
+	model.SkillSDDOptimize:   "SDD Optimize",
 	model.SkillJudgmentDay:   "Judgment Day",
 	model.SkillGoTesting:     "Go Testing",
 	model.SkillCreator:       "Skill Creator",

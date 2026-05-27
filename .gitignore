@@ -24,7 +24,7 @@ Thumbs.db
 
 # Docker
 *.tar
-cmd/gentle-ai/main
+cmd/framework-ai/main
 dist/
 
 # Agent tooling metadata (generated per-user, not product code)

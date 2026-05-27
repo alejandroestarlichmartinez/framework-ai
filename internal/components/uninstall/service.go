@@ -10,14 +10,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gentleman-programming/gentle-ai/internal/agents"
-	"github.com/gentleman-programming/gentle-ai/internal/assets"
-	"github.com/gentleman-programming/gentle-ai/internal/backup"
-	"github.com/gentleman-programming/gentle-ai/internal/components/filemerge"
-	"github.com/gentleman-programming/gentle-ai/internal/components/gga"
-	"github.com/gentleman-programming/gentle-ai/internal/components/sdd"
-	"github.com/gentleman-programming/gentle-ai/internal/model"
-	"github.com/gentleman-programming/gentle-ai/internal/state"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/agents"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/assets"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/backup"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/components/filemerge"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/components/gga"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/components/sdd"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/model"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/state"
 )
 
 type Manager interface {
@@ -86,6 +86,7 @@ var (
 		model.ComponentClaudeTheme,
 		model.ComponentOpenCodeGentleLogo,
 		model.ComponentGGA,
+		model.ComponentCodeGraph,
 	}
 	fullAgentRemovalComponents = []model.ComponentID{
 		model.ComponentPersona,
@@ -97,9 +98,10 @@ var (
 		model.ComponentTheme,
 		model.ComponentClaudeTheme,
 		model.ComponentOpenCodeGentleLogo,
+		model.ComponentCodeGraph,
 	}
 	sddPhaseAgents = []string{
-		"sdd-orchestrator",
+		"framework-orchestrator",
 		"sdd-init",
 		"sdd-explore",
 		"sdd-propose",
@@ -126,7 +128,7 @@ func NewService(homeDir, workspaceDir, appVersion string) (*Service, error) {
 		return nil, fmt.Errorf("create adapter registry: %w", err)
 	}
 
-	backupRoot := filepath.Join(homeDir, ".gentle-ai", "backups")
+	backupRoot := filepath.Join(homeDir, ".framework-ai", "backups")
 	if err := os.MkdirAll(backupRoot, 0o755); err != nil {
 		return nil, fmt.Errorf("create backup root %q: %w", backupRoot, err)
 	}
@@ -267,7 +269,7 @@ func (s *Service) CompleteUninstall() (Result, error) {
 		return result, err
 	}
 
-	result.ManualActions = append(result.ManualActions, "To completely remove gentle-ai from your system, delete the executable (e.g., rm -f $(which gentle-ai))")
+	result.ManualActions = append(result.ManualActions, "To completely remove framework-ai from your system, delete the executable (e.g., rm -f $(which framework-ai))")
 	return result, nil
 }
 
@@ -524,7 +526,7 @@ func (s *Service) componentOperations(adapter agents.Adapter, componentID model.
 			path := adapter.SystemPromptFile(homeDir)
 			targets = append(targets, path)
 			ops = append(ops, rewriteMarkdownFile(path, func(content string) (string, bool) {
-				return removeMarkdownSections(content, "sdd-orchestrator", "strict-tdd-mode")
+				return removeMarkdownSections(content, "framework-orchestrator", "strict-tdd-mode")
 			}))
 		}
 		if adapter.SupportsSlashCommands() {
@@ -584,7 +586,7 @@ func (s *Service) componentOperations(adapter agents.Adapter, componentID model.
 			}
 			ops = append(ops, removeDirIfEmpty(pluginDir))
 
-			modelVariantsCacheDir := filepath.Join(homeDir, ".gentle-ai", "cache")
+			modelVariantsCacheDir := filepath.Join(homeDir, ".framework-ai", "cache")
 			for _, cachePath := range []string{
 				filepath.Join(modelVariantsCacheDir, "model-variants.json"),
 				filepath.Join(modelVariantsCacheDir, "model-variants.json.tmp"),
@@ -647,6 +649,16 @@ func (s *Service) componentOperations(adapter agents.Adapter, componentID model.
 			ops = append(ops, removeFile(path))
 		}
 		ops = append(ops, removeDirIfEmpty(filepath.Dir(gga.ConfigPath(homeDir))))
+	case model.ComponentCodeGraph:
+		targets = append(targets, codegraphTargets(adapter, homeDir)...)
+		ops = append(ops, codegraphOperations(adapter, homeDir)...)
+		if adapter.SupportsSystemPrompt() {
+			path := adapter.SystemPromptFile(homeDir)
+			targets = append(targets, path)
+			ops = append(ops, rewriteMarkdownFile(path, func(content string) (string, bool) {
+				return removeMarkdownSections(content, "codegraph")
+			}))
+		}
 	default:
 		return nil, nil, fmt.Errorf("unsupported component ID %q", componentID)
 	}
@@ -740,6 +752,54 @@ func engramOperations(adapter agents.Adapter, homeDir string) []operation {
 	default:
 		return nil
 	}
+}
+
+func codegraphTargets(adapter agents.Adapter, homeDir string) []string {
+	switch adapter.MCPStrategy() {
+	case model.StrategySeparateMCPFiles:
+		return []string{adapter.MCPConfigPath(homeDir, "codegraph")}
+	case model.StrategyMergeIntoSettings, model.StrategyMCPConfigFile:
+		return []string{adapter.MCPConfigPath(homeDir, "codegraph")}
+	case model.StrategyTOMLFile:
+		return []string{adapter.MCPConfigPath(homeDir, "codegraph")}
+	default:
+		return nil
+	}
+}
+
+func codegraphOperations(adapter agents.Adapter, homeDir string) []operation {
+	switch adapter.MCPStrategy() {
+	case model.StrategySeparateMCPFiles:
+		path := adapter.MCPConfigPath(homeDir, "codegraph")
+		return []operation{removeFile(path), removeDirIfEmpty(filepath.Dir(path))}
+	case model.StrategyMergeIntoSettings:
+		path := adapter.SettingsPath(homeDir)
+		if adapter.Agent() == model.AgentOpenCode {
+			return []operation{rewriteJSONFile(path, jsonPath{"mcp", "codegraph"})}
+		}
+		return []operation{rewriteJSONFile(path, jsonPath{"mcpServers", "codegraph"})}
+	case model.StrategyMCPConfigFile:
+		path := adapter.MCPConfigPath(homeDir, "codegraph")
+		if adapter.Agent() == model.AgentVSCodeCopilot {
+			return []operation{rewriteJSONFile(path, jsonPath{"servers", "codegraph"})}
+		}
+		return []operation{rewriteJSONFile(path, jsonPath{"mcpServers", "codegraph"})}
+	case model.StrategyTOMLFile:
+		configPath := adapter.MCPConfigPath(homeDir, "codegraph")
+		return []operation{rewriteTOMLFile(configPath, cleanCodegraphTOML)}
+	default:
+		return nil
+	}
+}
+
+func cleanCodegraphTOML(content string) (string, bool) {
+	normalized := strings.ReplaceAll(content, "\r\n", "\n")
+	updated := removeTOMLTable(normalized, "mcp_servers.codegraph")
+	updated = strings.TrimSpace(updated)
+	if updated != "" {
+		updated += "\n"
+	}
+	return updated, updated != normalized
 }
 
 func rewriteMarkdownFile(path string, mutate func(content string) (string, bool)) operation {
@@ -871,7 +931,7 @@ func removeClaudeSkillRegistryHook(raw []byte) ([]byte, bool, error) {
 			for _, hook := range hooks {
 				hookMap, ok := hook.(map[string]any)
 				cmd, _ := hookMap["command"].(string)
-				if ok && strings.Contains(cmd, "gentle-ai skill-registry refresh") {
+				if ok && strings.Contains(cmd, "framework-ai skill-registry refresh") {
 					changed = true
 					continue
 				}

@@ -10,7 +10,7 @@ Pi support installs the Gentleman harness as Pi packages, then lets Pi own its o
 2. Install the Pi support stack from Gentle AI:
 
 ```bash
-gentle-ai install --agent pi
+framework-ai install --agent pi
 ```
 
 3. Start Pi in your project:
@@ -73,14 +73,14 @@ Run these inside Pi after installing the package stack.
 
 | Command                          | What it does                                                                                                    |
 | -------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `/gentle-ai:status`              | Shows package, SDD asset, OpenSpec, and model config status.                                                    |
+| `/framework-ai:status`              | Shows package, SDD asset, OpenSpec, and model config status.                                                    |
 | `/gentleman:persona`             | Switches between `gentleman` and `neutral` personas.                                                            |
-| `/gentle-ai:persona`             | Compatibility alias for `/gentleman:persona`.                                                                   |
+| `/framework-ai:persona`             | Compatibility alias for `/gentleman:persona`.                                                                   |
 | `/gentleman:models`              | Opens the Pi-native model assignment modal.                                                                     |
-| `/gentle-ai:models`              | Compatibility alias for `/gentleman:models`.                                                                    |
+| `/framework-ai:models`              | Compatibility alias for `/gentleman:models`.                                                                    |
 | `/sdd-init`                      | Bootstraps or refreshes `openspec/config.yaml`.                                                                 |
-| `/gentle-ai:install-sdd`         | Reinstalls SDD assets without overwriting local files.                                                          |
-| `/gentle-ai:install-sdd --force` | Force-refreshes installed SDD assets. Use this when you explicitly want package assets to replace local copies. |
+| `/framework-ai:install-sdd`         | Reinstalls SDD assets without overwriting local files.                                                          |
+| `/framework-ai:install-sdd --force` | Force-refreshes installed SDD assets. Use this when you explicitly want package assets to replace local copies. |
 
 ## Persona Selection
 
@@ -98,7 +98,7 @@ Pi persona selection belongs to `gentle-pi`, not the Gentle AI installer.
 The selection is saved at:
 
 ```text
-.pi/gentle-ai/persona.json
+.pi/framework-ai/persona.json
 ```
 
 Run `/reload` or start a new Pi session after switching if the current session already injected the previous persona.
@@ -124,7 +124,7 @@ The modal discovers project, user, and built-in agents. SDD agents are shown fir
 Saved config:
 
 ```text
-.pi/gentle-ai/models.json
+.pi/framework-ai/models.json
 ```
 
 Applied configuration:
@@ -143,11 +143,11 @@ On normal Pi `session_start`, `gentle-pi` copies project-local assets without ov
 ```text
 .pi/agents/sdd-*.md
 .pi/chains/sdd-*.chain.md
-.pi/gentle-ai/support/strict-tdd.md
-.pi/gentle-ai/support/strict-tdd-verify.md
+.pi/framework-ai/support/strict-tdd.md
+.pi/framework-ai/support/strict-tdd-verify.md
 ```
 
-Use `/gentle-ai:install-sdd --force` only when you want to replace local SDD assets with the package version.
+Use `/framework-ai:install-sdd --force` only when you want to replace local SDD assets with the package version.
 
 If you start Pi with `pi -ns`, Pi skips startup skill loading/hooks. That mode is useful for a clean or faster Pi session, but it also means `gentle-pi` startup work such as asset checks and skill-registry refreshes will not run automatically.
 
@@ -156,11 +156,11 @@ If you start Pi with `pi -ns`, Pi skips startup skill loading/hooks. That mode i
 | Symptom                                                | Fix                                                                                                                                                                  |
 | ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Gentle AI says Pi is missing                           | Install Pi first and make sure `pi` is on `PATH`.                                                                                                                    |
-| SDD agents are missing in Pi                           | Start Pi normally in the project so `gentle-pi` can run `session_start`, or run `/gentle-ai:install-sdd`. If you used `pi -ns`, startup hooks were skipped.          |
+| SDD agents are missing in Pi                           | Start Pi normally in the project so `gentle-pi` can run `session_start`, or run `/framework-ai:install-sdd`. If you used `pi -ns`, startup hooks were skipped.          |
 | Persona did not change immediately                     | Run `/reload` or start a new Pi session.                                                                                                                             |
 | Model override should be removed                       | Open `/gentleman:models` and choose `Inherit active/default model`.                                                                                                  |
-| Memory tools or `/mcp` are missing                     | Re-run `gentle-ai install --agent pi` to refresh `.pi/agent/settings.json`, `.pi/npm/package.json`, and the `pi-engram init` wiring, then check `/gentle-ai:status`. |
-| `gentle-engram` is installed but Engram is unavailable | Re-run `gentle-ai install --agent pi` so the real Engram component is provisioned.                                                                                   |
+| Memory tools or `/mcp` are missing                     | Re-run `framework-ai install --agent pi` to refresh `.pi/agent/settings.json`, `.pi/npm/package.json`, and the `pi-engram init` wiring, then check `/framework-ai:status`. |
+| `gentle-engram` is installed but Engram is unavailable | Re-run `framework-ai install --agent pi` so the real Engram component is provisioned.                                                                                   |
 
 ## Next Steps
 

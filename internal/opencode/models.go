@@ -219,7 +219,7 @@ func DefaultVariantsCachePath() string {
 	if err != nil {
 		return ""
 	}
-	return filepath.Join(home, ".gentle-ai", "cache", "model-variants.json")
+	return filepath.Join(home, ".framework-ai", "cache", "model-variants.json")
 }
 
 // LoadVariants reads the plugin-generated model-variants.json file.

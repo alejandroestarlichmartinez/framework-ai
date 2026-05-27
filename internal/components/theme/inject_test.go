@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/internal/agents"
-	"github.com/gentleman-programming/gentle-ai/internal/agents/claude"
-	"github.com/gentleman-programming/gentle-ai/internal/agents/opencode"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/agents"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/agents/claude"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/agents/opencode"
 )
 
 func claudeAdapter() agents.Adapter   { return claude.NewAdapter() }
@@ -172,10 +172,10 @@ func TestInjectClaudeThemeWritesGentlemanThemeFile(t *testing.T) {
 		"diffRemoved":               "#5C3838",
 		"diffAddedWord":             "#76946A",
 		"diffRemovedWord":           "#C34043",
-		"chromeYellow":              "#DCA561",
-		"briefLabelYou":             "#DCA561",
-		"rainbow_yellow":            "#DCA561",
-		"yellow_FOR_SUBAGENTS_ONLY": "#DCA561",
+		"chromeYellow":              "#f7df1e",
+		"briefLabelYou":             "#f7df1e",
+		"rainbow_yellow":            "#f7df1e",
+		"yellow_FOR_SUBAGENTS_ONLY": "#f7df1e",
 	}
 	for key, want := range expected {
 		if root.Overrides[key] != want {

@@ -1,6 +1,6 @@
 package planner
 
-import "github.com/gentleman-programming/gentle-ai/internal/model"
+import "github.com/alejandroestarlichmartinez/framework-ai/internal/model"
 
 type Graph struct {
 	dependencies map[model.ComponentID][]model.ComponentID
@@ -45,6 +45,7 @@ func MVPGraph() Graph {
 		model.ComponentTheme:              nil,
 		model.ComponentClaudeTheme:        nil,
 		model.ComponentOpenCodeGentleLogo: nil,
+		model.ComponentCodeGraph:          nil,
 	})
 }
 

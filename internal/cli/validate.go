@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gentleman-programming/gentle-ai/internal/catalog"
-	"github.com/gentleman-programming/gentle-ai/internal/model"
-	"github.com/gentleman-programming/gentle-ai/internal/system"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/catalog"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/model"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/system"
 )
 
 type InstallInput struct {
@@ -23,17 +23,17 @@ func NormalizeInstallFlags(flags InstallFlags, detection system.DetectionResult)
 	}
 	selection.Agents = unique(agents)
 
-	persona, err := normalizePersona(flags.Persona)
-	if err != nil {
-		return InstallInput{}, err
-	}
-	selection.Persona = persona
-
 	preset, err := normalizePreset(flags.Preset)
 	if err != nil {
 		return InstallInput{}, err
 	}
 	selection.Preset = preset
+
+	persona, err := normalizePersona(flags.Persona, selection.Preset)
+	if err != nil {
+		return InstallInput{}, err
+	}
+	selection.Persona = persona
 
 	components, err := normalizeComponents(flags.Components, selection.Preset)
 	if err != nil {
@@ -60,13 +60,16 @@ func NormalizeInstallFlags(flags InstallFlags, detection system.DetectionResult)
 	return InstallInput{Selection: selection, DryRun: flags.DryRun}, nil
 }
 
-func normalizePersona(value string) (model.PersonaID, error) {
+func normalizePersona(value string, preset model.PresetID) (model.PersonaID, error) {
 	if strings.TrimSpace(value) == "" {
+		if preset == model.PresetFullRick {
+			return model.PersonaRickSanchez, nil
+		}
 		return model.PersonaGentleman, nil
 	}
 
 	switch model.PersonaID(value) {
-	case model.PersonaGentleman, model.PersonaNeutral, model.PersonaCustom:
+	case model.PersonaGentleman, model.PersonaRickSanchez, model.PersonaNeutral, model.PersonaCustom:
 		return model.PersonaID(value), nil
 	default:
 		return "", fmt.Errorf("unsupported persona %q", value)
@@ -79,7 +82,7 @@ func normalizePreset(value string) (model.PresetID, error) {
 	}
 
 	switch model.PresetID(value) {
-	case model.PresetFullGentleman, model.PresetEcosystemOnly, model.PresetMinimal, model.PresetCustom:
+	case model.PresetFullGentleman, model.PresetFullRick, model.PresetEcosystemOnly, model.PresetMinimal, model.PresetCustom:
 		return model.PresetID(value), nil
 	default:
 		return "", fmt.Errorf("unsupported preset %q", value)
@@ -151,6 +154,8 @@ func componentsForPreset(preset model.PresetID) []model.ComponentID {
 		return []model.ComponentID{model.ComponentEngram, model.ComponentSDD, model.ComponentSkills, model.ComponentContext7, model.ComponentGGA}
 	case model.PresetCustom:
 		return nil
+	case model.PresetFullRick:
+		fallthrough
 	default:
 		return []model.ComponentID{
 			model.ComponentEngram,
@@ -162,6 +167,7 @@ func componentsForPreset(preset model.PresetID) []model.ComponentID {
 			model.ComponentGGA,
 			model.ComponentClaudeTheme,
 			model.ComponentOpenCodeGentleLogo,
+			model.ComponentCodeGraph,
 		}
 	}
 }

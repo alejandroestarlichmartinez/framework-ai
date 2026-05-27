@@ -8,16 +8,16 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/internal/agents"
-	"github.com/gentleman-programming/gentle-ai/internal/agents/antigravity"
-	"github.com/gentleman-programming/gentle-ai/internal/agents/claude"
-	"github.com/gentleman-programming/gentle-ai/internal/agents/codex"
-	"github.com/gentleman-programming/gentle-ai/internal/agents/gemini"
-	"github.com/gentleman-programming/gentle-ai/internal/agents/openclaw"
-	"github.com/gentleman-programming/gentle-ai/internal/agents/opencode"
-	"github.com/gentleman-programming/gentle-ai/internal/agents/pi"
-	"github.com/gentleman-programming/gentle-ai/internal/agents/qwen"
-	"github.com/gentleman-programming/gentle-ai/internal/agents/vscode"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/agents"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/agents/antigravity"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/agents/claude"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/agents/codex"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/agents/gemini"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/agents/openclaw"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/agents/opencode"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/agents/pi"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/agents/qwen"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/agents/vscode"
 )
 
 func claudeAdapter() agents.Adapter   { return claude.NewAdapter() }
@@ -102,10 +102,10 @@ func TestInjectClaudeWritesProtocolSection(t *testing.T) {
 	}
 
 	text := string(content)
-	if !strings.Contains(text, "<!-- gentle-ai:engram-protocol -->") {
+	if !strings.Contains(text, "<!-- framework-ai:engram-protocol -->") {
 		t.Fatal("CLAUDE.md missing open marker for engram-protocol")
 	}
-	if !strings.Contains(text, "<!-- /gentle-ai:engram-protocol -->") {
+	if !strings.Contains(text, "<!-- /framework-ai:engram-protocol -->") {
 		t.Fatal("CLAUDE.md missing close marker for engram-protocol")
 	}
 	// Real content check.
@@ -192,7 +192,7 @@ func TestInjectOpenCodeMergesEngramToSettings(t *testing.T) {
 		t.Fatalf("ReadFile(AGENTS.md) error = %v", err)
 	}
 	agentsText := string(agentsContent)
-	if !strings.Contains(agentsText, "<!-- gentle-ai:engram-protocol -->") {
+	if !strings.Contains(agentsText, "<!-- framework-ai:engram-protocol -->") {
 		t.Fatal("AGENTS.md missing engram protocol section marker")
 	}
 	if !strings.Contains(agentsText, "mem_save") {
@@ -1481,8 +1481,8 @@ func TestInjectOpenClawWritesEngramProtocolToWorkspaceAgentsOnly(t *testing.T) {
 	}
 	agentsText := string(agentsContent)
 	for _, want := range []string{
-		"<!-- gentle-ai:engram-protocol -->",
-		"<!-- /gentle-ai:engram-protocol -->",
+		"<!-- framework-ai:engram-protocol -->",
+		"<!-- /framework-ai:engram-protocol -->",
 		"mem_save",
 	} {
 		if !strings.Contains(agentsText, want) {
@@ -1498,7 +1498,7 @@ func TestInjectOpenClawWritesEngramProtocolToWorkspaceAgentsOnly(t *testing.T) {
 		t.Fatalf("ReadFile(TOOLS.md) error = %v", err)
 	}
 	toolsText := string(toolsContent)
-	if strings.Contains(toolsText, "gentle-ai:engram-protocol") || strings.Contains(toolsText, "mem_save") {
+	if strings.Contains(toolsText, "framework-ai:engram-protocol") || strings.Contains(toolsText, "mem_save") {
 		t.Fatalf("TOOLS.md must not receive Engram protocol sections; got:\n%s", toolsText)
 	}
 	if !strings.Contains(toolsText, "User-owned tool notes.") {
@@ -1516,7 +1516,7 @@ func TestInjectOpenClawWritesEngramProtocolToWorkspaceAgentsOnly(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ReadFile(AGENTS.md) second error = %v", err)
 	}
-	if count := strings.Count(string(updated), "<!-- gentle-ai:engram-protocol -->"); count != 1 {
+	if count := strings.Count(string(updated), "<!-- framework-ai:engram-protocol -->"); count != 1 {
 		t.Fatalf("AGENTS.md has %d Engram protocol markers, want exactly 1", count)
 	}
 }

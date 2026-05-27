@@ -10,9 +10,9 @@
 | --------- | ----------- | --------------------------------------------------------------------------------- |
 | Gentleman | `gentleman` | Teaching-oriented mentor persona — pushes back on bad practices, explains the why |
 | Neutral   | `neutral`   | Same teacher, same philosophy, no regional language — warm and professional       |
-| Custom    | `custom`    | Keep your existing persona/config unmanaged — gentle-ai does not inject a persona |
+| Custom    | `custom`    | Keep your existing persona/config unmanaged — framework-ai does not inject a persona |
 
-`custom` is a compatibility/ownership choice, not a persona editor. Use it when you already have your own persona instructions and want gentle-ai to leave them alone.
+`custom` is a compatibility/ownership choice, not a persona editor. Use it when you already have your own persona instructions and want framework-ai to leave them alone.
 
 ---
 
@@ -21,7 +21,7 @@
 Just run it — the Bubbletea TUI guides you through agent selection, components, skills, presets, and managed uninstall flows:
 
 ```bash
-gentle-ai
+framework-ai
 ```
 
 The uninstall flow is also available from the TUI menu. It lets you:
@@ -30,7 +30,7 @@ The uninstall flow is also available from the TUI menu. It lets you:
 - select which managed components to remove (for example `sdd`, `persona`, or `context7`)
 - confirm the exact uninstall scope before applying changes
 
-Before any managed file is modified, `gentle-ai` creates a backup snapshot so the configuration can be restored later if needed.
+Before any managed file is modified, `framework-ai` creates a backup snapshot so the configuration can be restored later if needed.
 
 ---
 
@@ -42,29 +42,29 @@ First-time setup — detects your tools, configures agents, injects all componen
 
 ```bash
 # Full ecosystem for multiple agents
-gentle-ai install \
+framework-ai install \
   --agent claude-code,opencode,gemini-cli \
   --preset full-gentleman
 
 # Minimal setup for Cursor
-gentle-ai install \
+framework-ai install \
   --agent cursor \
   --preset minimal
 
 # OpenClaw setup after installing OpenClaw manually
-gentle-ai install \
+framework-ai install \
   --agent openclaw \
   --preset full-gentleman
 
 # Pick specific components and skills
-gentle-ai install \
+framework-ai install \
   --agent claude-code \
   --component engram,sdd,skills,context7,persona,permissions \
   --skill go-testing,skill-creator,branch-pr,issue-creation \
   --persona gentleman
 
 # Dry-run first (preview plan without applying changes)
-gentle-ai install --dry-run \
+framework-ai install --dry-run \
   --agent claude-code,opencode \
   --preset full-gentleman
 ```
@@ -74,9 +74,9 @@ gentle-ai install --dry-run \
 Refresh the project-local skill registry used by orchestrators before they delegate work:
 
 ```bash
-gentle-ai skill-registry refresh
-gentle-ai skill-registry refresh --force
-gentle-ai skill-registry refresh --cwd /path/to/project --quiet
+framework-ai skill-registry refresh
+framework-ai skill-registry refresh --force
+framework-ai skill-registry refresh --cwd /path/to/project --quiet
 ```
 
 The command scans project skills first (`skills/`, `.opencode/skills/`, `.claude/skills/`, `.github/skills/`, and other supported workspace skill roots), then global agent skill directories. Project-local skills win over same-name global skills.
@@ -89,22 +89,22 @@ See [Skill Registry](skill-registry.md) for the full index-first flow and diagra
 
 ### sync
 
-Refresh managed assets to the current version. Use after `brew upgrade gentle-ai` or when you want your local configs aligned with the latest release. Does NOT reinstall binaries (engram, GGA) — only updates prompt content, skills, MCP configs, and SDD orchestrators.
+Refresh managed assets to the current version. Use after `brew upgrade framework-ai` or when you want your local configs aligned with the latest release. Does NOT reinstall binaries (engram, GGA) — only updates prompt content, skills, MCP configs, and SDD orchestrators.
 
 ```bash
 # Sync all installed agents
-gentle-ai sync
+framework-ai sync
 
 # Sync specific agents only
-gentle-ai sync --agent cursor --agent windsurf
+framework-ai sync --agent cursor --agent windsurf
 
 # Sync a specific component
-gentle-ai sync --component sdd
-gentle-ai sync --component skills
-gentle-ai sync --component engram
+framework-ai sync --component sdd
+framework-ai sync --component skills
+framework-ai sync --component engram
 
 # Refresh OpenClaw workspace instructions and MCP config
-gentle-ai sync --agent openclaw
+framework-ai sync --agent openclaw
 ```
 
 Sync is safe and idempotent — running it twice produces no changes the second time.
@@ -113,52 +113,52 @@ For OpenClaw, sync reads the active workspace from `~/.openclaw/openclaw.json` (
 
 ### uninstall
 
-Remove only the `gentle-ai` managed configuration from one or more agents. This does not uninstall external packages or binaries — it removes managed prompt sections, MCP entries, skills/config fragments, and other managed files, then updates `state.json` accordingly.
+Remove only the `framework-ai` managed configuration from one or more agents. This does not uninstall external packages or binaries — it removes managed prompt sections, MCP entries, skills/config fragments, and other managed files, then updates `state.json` accordingly.
 
-Before any change is applied, `gentle-ai` creates a backup snapshot of the affected files.
+Before any change is applied, `framework-ai` creates a backup snapshot of the affected files.
 
 ```bash
 # Partial uninstall for specific agents
-gentle-ai uninstall \
+framework-ai uninstall \
   --agent claude-code \
   --agent opencode
 
 # Partial uninstall for specific components only
-gentle-ai uninstall \
+framework-ai uninstall \
   --agent claude-code \
   --component sdd,persona,context7
 
 # Complete uninstall of managed config from all supported agents
-gentle-ai uninstall --all
+framework-ai uninstall --all
 
 # Skip confirmation prompt
-gentle-ai uninstall --agent cursor --component skills --yes
+framework-ai uninstall --agent cursor --component skills --yes
 ```
 
-If no `--component` flag is provided for a partial uninstall, `gentle-ai` removes all managed uninstallable components for the selected agent set.
+If no `--component` flag is provided for a partial uninstall, `framework-ai` removes all managed uninstallable components for the selected agent set.
 
 ### update / upgrade
 
-Check for and install new versions of `gentle-ai` itself:
+Check for and install new versions of `framework-ai` itself:
 
 ```bash
 # Check if a newer version is available
-gentle-ai update
+framework-ai update
 
 # Upgrade to the latest release (downloads new binary, replaces current)
-gentle-ai upgrade
+framework-ai upgrade
 ```
 
-After upgrading, run `gentle-ai sync` to refresh all managed assets to the new version's content.
+After upgrading, run `framework-ai sync` to refresh all managed assets to the new version's content.
 
-If GitHub rate-limits update checks, export `GITHUB_TOKEN` or `GH_TOKEN` before running `gentle-ai update`/`upgrade`.
+If GitHub rate-limits update checks, export `GITHUB_TOKEN` or `GH_TOKEN` before running `framework-ai update`/`upgrade`.
 
 ### version
 
 ```bash
-gentle-ai version
-gentle-ai --version
-gentle-ai -v
+framework-ai version
+framework-ai --version
+framework-ai -v
 ```
 
 ---
@@ -190,18 +190,18 @@ gentle-ai -v
 
 ```bash
 # Create a "cheap" profile using a free model for all phases
-gentle-ai sync --profile cheap:openrouter/qwen/qwen3-30b-a3b:free
+framework-ai sync --profile cheap:openrouter/qwen/qwen3-30b-a3b:free
 
 # Override the design phase to use a stronger model
-gentle-ai sync --profile-phase cheap:sdd-design:anthropic/claude-sonnet-4-20250514
+framework-ai sync --profile-phase cheap:sdd-design:anthropic/claude-sonnet-4-20250514
 
 # Create multiple profiles in one command
-gentle-ai sync \
+framework-ai sync \
   --profile cheap:openrouter/qwen/qwen3-30b-a3b:free \
   --profile premium:anthropic/claude-sonnet-4-20250514
 
 # Use compatibility mode with an external OpenCode profile manager
-gentle-ai sync --agent opencode --sdd-profile-strategy external-single-active
+framework-ai sync --agent opencode --sdd-profile-strategy external-single-active
 ```
 
 See [OpenCode SDD Profiles](opencode-profiles.md) for the full guide.
@@ -221,25 +221,25 @@ See [OpenCode SDD Profiles](opencode-profiles.md) for the full guide.
 
 ```bash
 # First time: install everything
-brew install gentleman-programming/tap/gentle-ai
-gentle-ai install --agent claude-code,cursor --preset full-gentleman
+brew install gentleman-programming/tap/framework-ai
+framework-ai install --agent claude-code,cursor --preset full-gentleman
 
 # After a new release: upgrade + sync
-brew upgrade gentle-ai
-gentle-ai sync
+brew upgrade framework-ai
+framework-ai sync
 
 # Remove only managed SDD + persona config from one agent
-gentle-ai uninstall --agent claude-code --component sdd,persona
+framework-ai uninstall --agent claude-code --component sdd,persona
 
 # Adding a new agent later
-gentle-ai install --agent windsurf --preset full-gentleman
+framework-ai install --agent windsurf --preset full-gentleman
 ```
 
 ---
 
 ## Dependency Management
 
-`gentle-ai` auto-detects prerequisites before installation and provides platform-specific guidance:
+`framework-ai` auto-detects prerequisites before installation and provides platform-specific guidance:
 
 - **Detected tools**: git, curl, node, npm, brew, go
 - **Version checks**: validates minimum versions where applicable

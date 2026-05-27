@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/internal/components/filemerge"
-	"github.com/gentleman-programming/gentle-ai/internal/model"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/components/filemerge"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/model"
 )
 
 // TestProfileLifecycle_FullCRUD exercises the complete profile lifecycle:
@@ -29,7 +29,7 @@ func TestProfileLifecycle_FullCRUD(t *testing.T) {
 		t.Fatalf("write initial opencode.json: %v", err)
 	}
 
-	// Step 2: WriteSharedPromptFiles — expect 10 files created.
+	// Step 2: WriteSharedPromptFiles — expect 12 files created.
 	changed, err := WriteSharedPromptFiles(home)
 	if err != nil {
 		t.Fatalf("WriteSharedPromptFiles(): %v", err)
@@ -63,7 +63,7 @@ func TestProfileLifecycle_FullCRUD(t *testing.T) {
 		t.Fatalf("GenerateProfileOverlay(): %v", err)
 	}
 
-	// Step 4: Merge overlay into opencode.json → verify 11 agent keys for "cheap".
+	// Step 4: Merge overlay into opencode.json → verify 13 agent keys for "cheap".
 	baseJSON, err := os.ReadFile(settingsPath)
 	if err != nil {
 		t.Fatalf("ReadFile(opencode.json): %v", err)
@@ -76,7 +76,7 @@ func TestProfileLifecycle_FullCRUD(t *testing.T) {
 		t.Fatalf("WriteFileAtomic(): %v", writeErr)
 	}
 
-	// Verify 11 agent keys for "cheap" profile.
+	// Verify 13 agent keys for "cheap" profile.
 	var root map[string]any
 	if err := json.Unmarshal(merged, &root); err != nil {
 		t.Fatalf("unmarshal merged: %v", err)
@@ -91,8 +91,8 @@ func TestProfileLifecycle_FullCRUD(t *testing.T) {
 			t.Errorf("merged agent map missing key %q", key)
 		}
 	}
-	if len(expectedCheapKeys) != 11 {
-		t.Errorf("expected 11 cheap profile keys, got %d", len(expectedCheapKeys))
+	if len(expectedCheapKeys) != 13 {
+		t.Errorf("expected 13 cheap profile keys, got %d", len(expectedCheapKeys))
 	}
 
 	// Step 5: DetectProfiles → verify 1 profile detected with correct model.
@@ -149,7 +149,7 @@ func TestProfileLifecycle_FullCRUD(t *testing.T) {
 			profilesAfterEdit[0].OrchestratorModel.ModelID, "claude-sonnet-4-5")
 	}
 
-	// Step 7: RemoveProfileAgents → verify 11 keys removed.
+	// Step 7: RemoveProfileAgents → verify 13 keys removed.
 	if err := RemoveProfileAgents(settingsPath, "cheap"); err != nil {
 		t.Fatalf("RemoveProfileAgents(): %v", err)
 	}

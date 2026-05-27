@@ -6,7 +6,7 @@ The skill registry is a project-local index that lets every supported agent find
 
 ## When To Use It
 
-Use `gentle-ai skill-registry refresh` after you add, remove, rename, or move skills. Normal installs wire this refresh into startup hooks where the agent supports them.
+Use `framework-ai skill-registry refresh` after you add, remove, rename, or move skills. Normal installs wire this refresh into startup hooks where the agent supports them.
 
 ## Runtime Flow
 
@@ -32,7 +32,7 @@ Subagent executes with original skill intent preserved
 ## Refresh Flow
 
 ```text
-gentle-ai skill-registry refresh
+framework-ai skill-registry refresh
    │
    ├─ Scan project skill roots first
    │     skills/, .opencode/skills/, .claude/skills/, ...
@@ -106,7 +106,7 @@ Audits each indexed SKILL.md against docs/skill-style-guide.md
    └─ Apply mode: safely refactor skills and preserve intent
    │
    ▼
-Run gentle-ai skill-registry refresh again
+Run framework-ai skill-registry refresh again
 ```
 
 ## Why Not Compact Rules?
@@ -121,7 +121,7 @@ Compact rules were cheaper per delegation but could distort skills. The index-fi
 ## Quick Check
 
 ```bash
-gentle-ai skill-registry refresh --force
+framework-ai skill-registry refresh --force
 ```
 
 Open `.atl/skill-registry.md` and verify each row has a useful description and a real `SKILL.md` path.

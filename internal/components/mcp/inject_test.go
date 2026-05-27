@@ -6,13 +6,13 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/internal/agents"
-	"github.com/gentleman-programming/gentle-ai/internal/agents/claude"
-	"github.com/gentleman-programming/gentle-ai/internal/agents/codex"
-	"github.com/gentleman-programming/gentle-ai/internal/agents/kimi"
-	"github.com/gentleman-programming/gentle-ai/internal/agents/openclaw"
-	"github.com/gentleman-programming/gentle-ai/internal/agents/opencode"
-	"github.com/gentleman-programming/gentle-ai/internal/agents/vscode"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/agents"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/agents/claude"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/agents/codex"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/agents/kimi"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/agents/openclaw"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/agents/opencode"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/agents/vscode"
 )
 
 func cursorAdapter(t *testing.T) agents.Adapter {

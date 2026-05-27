@@ -11,9 +11,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/internal/backup"
-	"github.com/gentleman-programming/gentle-ai/internal/system"
-	"github.com/gentleman-programming/gentle-ai/internal/update"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/backup"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/system"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/update"
 )
 
 // --- helpers ---
@@ -47,7 +47,7 @@ func makeResult(name string, status update.UpdateStatus, oldVer, newVer string, 
 // UpdateAvailable or DevBuild status (i.e. only UpToDate and NotInstalled tools).
 func TestExecute_NoopWhenNothingIsExecutable(t *testing.T) {
 	results := []update.UpdateResult{
-		makeResult("gentle-ai", update.UpToDate, "1.0.0", "1.0.0", update.InstallBinary),
+		makeResult("framework-ai", update.UpToDate, "1.0.0", "1.0.0", update.InstallBinary),
 		makeResult("engram", update.NotInstalled, "", "0.4.0", update.InstallGoInstall),
 		// gga: CheckFailed — should also be omitted from results.
 		makeResult("gga", update.CheckFailed, "", "", update.InstallScript),
@@ -84,7 +84,7 @@ func TestExecute_DevBuildOnlyNoBackupCreated(t *testing.T) {
 	}
 
 	results := []update.UpdateResult{
-		makeResult("gentle-ai", update.DevBuild, "dev", "1.0.0", update.InstallBinary),
+		makeResult("framework-ai", update.DevBuild, "dev", "1.0.0", update.InstallBinary),
 	}
 
 	report := Execute(context.Background(), results, linuxProfile(), t.TempDir(), false)
@@ -358,7 +358,7 @@ func TestExecute_PerToolSuccessAndFailure(t *testing.T) {
 // --- TestExecute_DevBuildIsSkipped ---
 
 // TestExecute_DevBuildIsSkipped verifies the spec requirement:
-// gentle-ai with DevBuild status must appear in Results as UpgradeSkipped
+// framework-ai with DevBuild status must appear in Results as UpgradeSkipped
 // with a non-empty ManualHint explaining it is a source/dev build.
 // DevBuild tools must NOT be auto-executed, and engram/gga remain eligible.
 func TestExecute_DevBuildIsSkipped(t *testing.T) {
@@ -369,29 +369,29 @@ func TestExecute_DevBuildIsSkipped(t *testing.T) {
 	}
 
 	results := []update.UpdateResult{
-		makeResult("gentle-ai", update.DevBuild, "dev", "1.0.0", update.InstallBinary),
+		makeResult("framework-ai", update.DevBuild, "dev", "1.0.0", update.InstallBinary),
 		makeResult("engram", update.UpdateAvailable, "0.3.0", "0.4.0", update.InstallGoInstall),
 	}
 	results[1].Tool.GoImportPath = "github.com/Gentleman-Programming/engram/cmd/engram"
 
 	report := Execute(context.Background(), results, linuxProfile(), t.TempDir(), false)
 
-	// gentle-ai (DevBuild) MUST appear as UpgradeSkipped with a ManualHint.
+	// framework-ai (DevBuild) MUST appear as UpgradeSkipped with a ManualHint.
 	var devResult *ToolUpgradeResult
 	for i := range report.Results {
-		if report.Results[i].ToolName == "gentle-ai" {
+		if report.Results[i].ToolName == "framework-ai" {
 			r := report.Results[i]
 			devResult = &r
 		}
 	}
 	if devResult == nil {
-		t.Fatalf("gentle-ai (DevBuild) must appear in Results — was not found")
+		t.Fatalf("framework-ai (DevBuild) must appear in Results — was not found")
 	}
 	if devResult.Status != UpgradeSkipped {
-		t.Errorf("gentle-ai DevBuild Status = %q, want UpgradeSkipped", devResult.Status)
+		t.Errorf("framework-ai DevBuild Status = %q, want UpgradeSkipped", devResult.Status)
 	}
 	if devResult.ManualHint == "" {
-		t.Errorf("gentle-ai DevBuild ManualHint must be non-empty")
+		t.Errorf("framework-ai DevBuild ManualHint must be non-empty")
 	}
 
 	// engram should still be processed as succeeded.
@@ -454,7 +454,7 @@ func TestExecute_FailureDoesNotImplyConfigLoss(t *testing.T) {
 // --- TestExecute_DevBuildSurfacedAsSkipped ---
 
 // TestExecute_DevBuildSurfacedAsSkipped verifies the spec gap:
-// A DevBuild tool (e.g. gentle-ai with version="dev") MUST appear in UpgradeReport.Results
+// A DevBuild tool (e.g. framework-ai with version="dev") MUST appear in UpgradeReport.Results
 // with Status=UpgradeSkipped and a non-empty ManualHint explaining it is a dev/source build.
 // Previously, DevBuild tools were silently omitted from Results entirely.
 func TestExecute_DevBuildSurfacedAsSkipped(t *testing.T) {
@@ -465,32 +465,32 @@ func TestExecute_DevBuildSurfacedAsSkipped(t *testing.T) {
 	}
 
 	results := []update.UpdateResult{
-		makeResult("gentle-ai", update.DevBuild, "dev", "1.0.0", update.InstallBinary),
+		makeResult("framework-ai", update.DevBuild, "dev", "1.0.0", update.InstallBinary),
 		makeResult("engram", update.UpdateAvailable, "0.3.0", "0.4.0", update.InstallGoInstall),
 	}
 	results[1].Tool.GoImportPath = "github.com/Gentleman-Programming/engram/cmd/engram"
 
 	report := Execute(context.Background(), results, linuxProfile(), t.TempDir(), false)
 
-	// gentle-ai (DevBuild) MUST appear in results as UpgradeSkipped.
+	// framework-ai (DevBuild) MUST appear in results as UpgradeSkipped.
 	var devResult *ToolUpgradeResult
 	for i := range report.Results {
-		if report.Results[i].ToolName == "gentle-ai" {
+		if report.Results[i].ToolName == "framework-ai" {
 			r := report.Results[i]
 			devResult = &r
 		}
 	}
 
 	if devResult == nil {
-		t.Fatalf("gentle-ai DevBuild must appear in Results as UpgradeSkipped, but was not found")
+		t.Fatalf("framework-ai DevBuild must appear in Results as UpgradeSkipped, but was not found")
 	}
 
 	if devResult.Status != UpgradeSkipped {
-		t.Errorf("gentle-ai DevBuild Status = %q, want UpgradeSkipped", devResult.Status)
+		t.Errorf("framework-ai DevBuild Status = %q, want UpgradeSkipped", devResult.Status)
 	}
 
 	if devResult.ManualHint == "" {
-		t.Errorf("gentle-ai DevBuild ManualHint must be non-empty — should explain dev/source build")
+		t.Errorf("framework-ai DevBuild ManualHint must be non-empty — should explain dev/source build")
 	}
 
 	// engram (UpdateAvailable) must still be processed normally.
@@ -528,9 +528,9 @@ func TestExecute_ManualFallbackSurfacedAsSkippedNotFailed(t *testing.T) {
 	windowsProfile := system.PlatformProfile{OS: "windows", PackageManager: "winget", Supported: true}
 
 	results := []update.UpdateResult{
-		makeResult("gentle-ai", update.UpdateAvailable, "1.0.0", "1.5.0", update.InstallBinary),
+		makeResult("framework-ai", update.UpdateAvailable, "1.0.0", "1.5.0", update.InstallBinary),
 	}
-	results[0].UpdateHint = "See https://github.com/Gentleman-Programming/gentle-ai/releases"
+	results[0].UpdateHint = "See https://github.com/alejandroestarlichmartinez/framework-ai/releases"
 
 	report := Execute(context.Background(), results, windowsProfile, t.TempDir(), false)
 
@@ -651,7 +651,7 @@ func TestConfigPathsForBackup_CoversManagedAgentPaths(t *testing.T) {
 		".config/opencode/AGENTS.md":    "# OpenCode",
 		".config/opencode/opencode.json": `{"model":"claude"}`,
 		".gemini/GEMINI.md":                "# Gemini",
-		".cursor/rules/gentle-ai.mdc":       "# Cursor rules",
+		".cursor/rules/framework-ai.mdc":       "# Cursor rules",
 	}
 	unmanagedFile := filepath.Join(homeDir, ".claude", "conversation-transcript.md")
 
@@ -810,7 +810,7 @@ func TestExecute_UpgradeBackupManifestHasUpgradeMetadata(t *testing.T) {
 	}
 
 	// Find the backup manifest on disk and verify its metadata.
-	backupRoot := filepath.Join(homeDir, ".gentle-ai", "backups")
+	backupRoot := filepath.Join(homeDir, ".framework-ai", "backups")
 	entries, err := os.ReadDir(backupRoot)
 	if err != nil {
 		t.Fatalf("ReadDir backups: %v", err)
@@ -1260,9 +1260,9 @@ func TestExecute_SkippedUpgradeDoesNotRenderFailureMarker(t *testing.T) {
 	windowsProfile := system.PlatformProfile{OS: "windows", PackageManager: "winget", Supported: true}
 
 	results := []update.UpdateResult{
-		makeResult("gentle-ai", update.UpdateAvailable, "1.0.0", "1.5.0", update.InstallBinary),
+		makeResult("framework-ai", update.UpdateAvailable, "1.0.0", "1.5.0", update.InstallBinary),
 	}
-	results[0].UpdateHint = "See https://github.com/Gentleman-Programming/gentle-ai/releases"
+	results[0].UpdateHint = "See https://github.com/alejandroestarlichmartinez/framework-ai/releases"
 
 	// Capture the progress output written to the progress writer.
 	var progressBuf bytes.Buffer

@@ -19,7 +19,7 @@ Gentle-AI is a Go CLI/TUI that configures AI coding agents. It installs and sync
 User
   |
   v
-gentle-ai CLI / Bubbletea TUI
+framework-ai CLI / Bubbletea TUI
   |
   +--> detection + flag normalization
   +--> planner resolves components and dependencies

@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gentleman-programming/gentle-ai/internal/tui/styles"
-	"github.com/gentleman-programming/gentle-ai/internal/update"
-	"github.com/gentleman-programming/gentle-ai/internal/update/upgrade"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/tui/styles"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/update"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/update/upgrade"
 )
 
 // spinnerFrames are the unicode spinner animation frames used across screens.

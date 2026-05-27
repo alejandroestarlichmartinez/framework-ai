@@ -12,20 +12,20 @@ import (
 
 	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/gentleman-programming/gentle-ai/internal/agentbuilder"
-	"github.com/gentleman-programming/gentle-ai/internal/backup"
-	"github.com/gentleman-programming/gentle-ai/internal/catalog"
-	"github.com/gentleman-programming/gentle-ai/internal/components/opencodeplugin"
-	"github.com/gentleman-programming/gentle-ai/internal/components/sdd"
-	componentuninstall "github.com/gentleman-programming/gentle-ai/internal/components/uninstall"
-	"github.com/gentleman-programming/gentle-ai/internal/model"
-	"github.com/gentleman-programming/gentle-ai/internal/opencode"
-	"github.com/gentleman-programming/gentle-ai/internal/pipeline"
-	"github.com/gentleman-programming/gentle-ai/internal/planner"
-	"github.com/gentleman-programming/gentle-ai/internal/system"
-	"github.com/gentleman-programming/gentle-ai/internal/tui/screens"
-	"github.com/gentleman-programming/gentle-ai/internal/update"
-	"github.com/gentleman-programming/gentle-ai/internal/update/upgrade"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/agentbuilder"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/backup"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/catalog"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/components/opencodeplugin"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/components/sdd"
+	componentuninstall "github.com/alejandroestarlichmartinez/framework-ai/internal/components/uninstall"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/model"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/opencode"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/pipeline"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/planner"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/system"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/tui/screens"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/update"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/update/upgrade"
 )
 
 // osStatModelCache is a package-level variable so tests can override it to
@@ -1391,7 +1391,7 @@ func (m Model) confirmSelection() (tea.Model, tea.Cmd) {
 			m.ProfileNamePos = len([]rune(profile.Name))
 			m.ProfileNameErr = ""
 			// Build ModelAssignments from the profile's phase assignments + orchestrator.
-			// The ModelPicker shows gentle-orchestrator as the base row, so we need
+			// The ModelPicker shows framework-orchestrator as the base row, so we need
 			// to include it in the map for it to display the current model.
 			assignments := make(map[string]model.ModelAssignment)
 			for k, v := range profile.PhaseAssignments {
@@ -1509,6 +1509,10 @@ func (m Model) confirmSelection() (tea.Model, tea.Cmd) {
 		if m.Cursor < len(options) {
 			m.Selection.Preset = options[m.Cursor]
 			m.Selection.Components = componentsForPreset(options[m.Cursor])
+			// Auto-set default persona for FullRick if user hasn't explicitly chosen another.
+			if m.Selection.Preset == model.PresetFullRick && m.Selection.Persona == model.PersonaGentleman {
+				m.Selection.Persona = model.PersonaRickSanchez
+			}
 			if m.shouldShowClaudeModelPickerScreen() {
 				m.ClaudeModelPicker = screens.NewClaudeModelPickerState()
 				m.setScreen(ScreenClaudeModelPicker)
@@ -2190,7 +2194,7 @@ func (m Model) startUninstall() tea.Cmd {
 			}
 			if isHomebrewManagedBinary(execPath) {
 				result.ManualActions = append(result.ManualActions,
-					"Homebrew-managed install detected. Run 'brew uninstall gentle-ai' to remove the executable cleanly.")
+					"Homebrew-managed install detected. Run 'brew uninstall framework-ai' to remove the executable cleanly.")
 			} else if removeErr := osRemoveFn(execPath); removeErr != nil {
 				return UninstallDoneMsg{Result: result, Err: fmt.Errorf("uninstall succeeded but failed to remove binary at %q: %w", execPath, removeErr)}
 			}
@@ -3235,6 +3239,8 @@ func componentsForPreset(preset model.PresetID) []model.ComponentID {
 		return []model.ComponentID{model.ComponentEngram, model.ComponentSDD, model.ComponentSkills, model.ComponentContext7, model.ComponentGGA}
 	case model.PresetCustom:
 		return nil
+	case model.PresetFullRick:
+		fallthrough
 	default:
 		return []model.ComponentID{
 			model.ComponentEngram,
@@ -3246,6 +3252,7 @@ func componentsForPreset(preset model.PresetID) []model.ComponentID {
 			model.ComponentGGA,
 			model.ComponentClaudeTheme,
 			model.ComponentOpenCodeGentleLogo,
+			model.ComponentCodeGraph,
 		}
 	}
 }
@@ -3688,7 +3695,7 @@ func (m Model) startInstallation() (tea.Model, tea.Cmd) {
 		}
 
 		// Persist entry to registry.
-		registryPath := filepath.Join(homeDir(), ".config", "gentle-ai", "custom-agents.json")
+		registryPath := filepath.Join(homeDir(), ".config", "framework-ai", "custom-agents.json")
 		_ = os.MkdirAll(filepath.Dir(registryPath), 0755)
 		if reg, loadErr := agentbuilder.LoadRegistry(registryPath); loadErr == nil {
 			// Collect IDs of agents that were successfully installed.

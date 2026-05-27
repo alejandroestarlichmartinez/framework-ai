@@ -61,7 +61,7 @@ func fetchLatestRelease(ctx context.Context, owner, repo string) (githubRelease,
 	}
 
 	req.Header.Set("Accept", "application/vnd.github+json")
-	req.Header.Set("User-Agent", "gentle-ai-update-check")
+	req.Header.Set("User-Agent", "framework-ai-update-check")
 
 	if token := resolveGitHubToken(); token != "" {
 		req.Header.Set("Authorization", "Bearer "+token)

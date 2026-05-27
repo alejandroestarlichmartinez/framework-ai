@@ -5,7 +5,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/internal/model"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/model"
 )
 
 // ─── MockEngine tests ────────────────────────────────────────────────────────

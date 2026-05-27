@@ -9,9 +9,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/gentleman-programming/gentle-ai/internal/assets"
-	"github.com/gentleman-programming/gentle-ai/internal/components/filemerge"
-	"github.com/gentleman-programming/gentle-ai/internal/model"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/assets"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/components/filemerge"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/model"
 )
 
 // profileNameRegex matches valid profile name slugs: lowercase alphanumeric + hyphens,
@@ -20,8 +20,9 @@ var profileNameRegex = regexp.MustCompile(`^[a-z0-9]([a-z0-9-]*[a-z0-9])?$`)
 
 // reservedProfileNames are names that may not be used as profile names.
 var reservedProfileNames = map[string]bool{
-	"default":          true,
-	"sdd-orchestrator": true,
+	"default":               true,
+	"sdd-orchestrator":      true,
+	"framework-orchestrator": true,
 }
 
 // ValidateProfileName returns an error if the profile name is not a valid
@@ -55,6 +56,8 @@ var profilePhaseOrder = []string{
 	"sdd-verify",
 	"sdd-archive",
 	"sdd-onboard",
+	"sdd-inspect",
+	"sdd-optimize",
 }
 
 // ProfilePhaseOrder returns the ordered list of SDD sub-agent phase names.
@@ -112,7 +115,11 @@ func ProfileAgentKeys(name string) []string {
 	}
 
 	keys := make([]string, 0, 11)
-	keys = append(keys, "sdd-orchestrator"+suffix)
+	if name == "" {
+		keys = append(keys, "framework-orchestrator")
+	} else {
+		keys = append(keys, "sdd-orchestrator"+suffix)
+	}
 	for _, phase := range profilePhaseOrder {
 		keys = append(keys, phase+suffix)
 	}
@@ -350,8 +357,8 @@ func buildProfileOrchestratorPrompt(profile model.Profile) (string, error) {
 	base := assets.MustRead(sddOrchestratorAsset(model.AgentOpenCode))
 
 	// Inject model assignments table.
-	const openMarker = "<!-- gentle-ai:sdd-model-assignments -->"
-	const closeMarker = "<!-- /gentle-ai:sdd-model-assignments -->"
+	const openMarker = "<!-- framework-ai:sdd-model-assignments -->"
+	const closeMarker = "<!-- /framework-ai:sdd-model-assignments -->"
 
 	start := strings.Index(base, openMarker)
 	end := strings.Index(base, closeMarker)

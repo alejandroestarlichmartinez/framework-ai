@@ -249,7 +249,7 @@ func TestMergeJSONObjects_Issue278_WildcardSurvivesDeepMerge(t *testing.T) {
 	// Simulates an existing user's opencode.json (installed before the fix).
 	base := []byte(`{
   "agent": {
-    "sdd-orchestrator": {
+    "framework-orchestrator": {
       "permission": {
         "task": {
           "*": "deny",
@@ -263,7 +263,7 @@ func TestMergeJSONObjects_Issue278_WildcardSurvivesDeepMerge(t *testing.T) {
 	// Simulates the NEW overlay with explicit allowlist (the fix).
 	overlay := []byte(`{
   "agent": {
-    "sdd-orchestrator": {
+    "framework-orchestrator": {
       "permission": {
         "task": {
           "*": "deny",
@@ -294,7 +294,7 @@ func TestMergeJSONObjects_Issue278_WildcardSurvivesDeepMerge(t *testing.T) {
 	}
 
 	agent := got["agent"].(map[string]any)
-	orch := agent["sdd-orchestrator"].(map[string]any)
+	orch := agent["framework-orchestrator"].(map[string]any)
 	perm := orch["permission"].(map[string]any)
 	task := perm["task"].(map[string]any)
 
@@ -323,7 +323,7 @@ func TestMergeJSONObjects_Issue278_ReplaceSentinelFixesWildcard(t *testing.T) {
 	// Same base: existing user with old wildcard.
 	base := []byte(`{
   "agent": {
-    "sdd-orchestrator": {
+    "framework-orchestrator": {
       "permission": {
         "task": {
           "*": "deny",
@@ -337,7 +337,7 @@ func TestMergeJSONObjects_Issue278_ReplaceSentinelFixesWildcard(t *testing.T) {
 	// Overlay using __replace__ sentinel on the task block.
 	overlay := []byte(`{
   "agent": {
-    "sdd-orchestrator": {
+    "framework-orchestrator": {
       "permission": {
         "task": {
           "__replace__": {
@@ -370,7 +370,7 @@ func TestMergeJSONObjects_Issue278_ReplaceSentinelFixesWildcard(t *testing.T) {
 	}
 
 	agent := got["agent"].(map[string]any)
-	orch := agent["sdd-orchestrator"].(map[string]any)
+	orch := agent["framework-orchestrator"].(map[string]any)
 	perm := orch["permission"].(map[string]any)
 	task := perm["task"].(map[string]any)
 

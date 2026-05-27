@@ -3,7 +3,7 @@ package sdd
 import (
 	"path/filepath"
 
-	"github.com/gentleman-programming/gentle-ai/internal/components/filemerge"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/components/filemerge"
 )
 
 // SharedPromptDir returns the directory where shared SDD prompt files are stored.
@@ -26,6 +26,8 @@ var subAgentPromptContent = map[string]string{
 	"sdd-verify":  "You are an SDD executor for the verify phase, not the orchestrator. Do this phase's work yourself. Do NOT delegate, Do NOT call task/delegate, and Do NOT launch sub-agents. Read your skill file at ~/.config/opencode/skills/sdd-verify/SKILL.md and follow it exactly.",
 	"sdd-archive": "You are an SDD executor for the archive phase, not the orchestrator. Do this phase's work yourself. Do NOT delegate, Do NOT call task/delegate, and Do NOT launch sub-agents. Read your skill file at ~/.config/opencode/skills/sdd-archive/SKILL.md and follow it exactly.",
 	"sdd-onboard": "You are an SDD executor for the onboard phase, not the orchestrator. Do this phase's work yourself. Do NOT delegate, Do NOT call task/delegate, and Do NOT launch sub-agents. Read your skill file at ~/.config/opencode/skills/sdd-onboard/SKILL.md and follow it exactly.",
+	"sdd-inspect": "You are an SDD executor for the inspect phase, not the orchestrator. Do this phase's work yourself. Do NOT delegate, Do NOT call task/delegate, and Do NOT launch sub-agents. Read your skill file at ~/.config/opencode/skills/sdd-inspect/SKILL.md and follow it exactly.",
+	"sdd-optimize": "You are an SDD executor for the optimize phase, not the orchestrator. Do this phase's work yourself. Do NOT delegate, Do NOT call task/delegate, and Do NOT launch sub-agents. Read your skill file at ~/.config/opencode/skills/sdd-optimize/SKILL.md and follow it exactly.",
 }
 
 // subAgentPhaseOrder is an alias for profilePhaseOrder (defined in profiles.go),
@@ -40,7 +42,26 @@ func SharedPromptPhases() []string {
 	return ProfilePhaseOrder()
 }
 
-// WriteSharedPromptFiles writes the 10 SDD sub-agent prompt files to
+// OrchestratorPromptDir returns the directory where the orchestrator prompt
+// file is stored. The path is {homeDir}/.config/opencode/agents.
+func OrchestratorPromptDir(homeDir string) string {
+	return filepath.Join(homeDir, ".config", "opencode", "agents")
+}
+
+// WriteOrchestratorPromptFile writes the orchestrator prompt to
+// {homeDir}/.config/opencode/agents/framework-orchestrator.md.
+// Returns the written path and true if the file was created or changed.
+func WriteOrchestratorPromptFile(homeDir string, content string) (string, bool, error) {
+	promptDir := OrchestratorPromptDir(homeDir)
+	path := filepath.Join(promptDir, "framework-orchestrator.md")
+	result, err := filemerge.WriteFileAtomic(path, []byte(content), 0o644)
+	if err != nil {
+		return "", false, err
+	}
+	return path, result.Changed, nil
+}
+
+// WriteSharedPromptFiles writes the 12 SDD sub-agent prompt files to
 // {homeDir}/.config/opencode/prompts/sdd/. Returns (true, nil) if any file
 // was created or changed, (false, nil) if all files already match (idempotent).
 // Uses WriteFileAtomic so the operation is safe to repeat.

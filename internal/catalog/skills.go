@@ -1,6 +1,6 @@
 package catalog
 
-import "github.com/gentleman-programming/gentle-ai/internal/model"
+import "github.com/alejandroestarlichmartinez/framework-ai/internal/model"
 
 type Skill struct {
 	ID       model.SkillID
@@ -22,6 +22,8 @@ var mvpSkills = []Skill{
 	{ID: model.SkillSDDTasks, Name: "sdd-tasks", Category: "sdd", Priority: "p0"},
 	{ID: model.SkillSDDArchive, Name: "sdd-archive", Category: "sdd", Priority: "p0"},
 	{ID: model.SkillSDDOnboard, Name: "sdd-onboard", Category: "sdd", Priority: "p0"},
+	{ID: model.SkillSDDInspect, Name: "sdd-inspect", Category: "sdd", Priority: "p0"},
+	{ID: model.SkillSDDOptimize, Name: "sdd-optimize", Category: "sdd", Priority: "p0"},
 	// Foundation skills
 	{ID: model.SkillGoTesting, Name: "go-testing", Category: "testing", Priority: "p0"},
 	{ID: model.SkillCreator, Name: "skill-creator", Category: "workflow", Priority: "p0"},

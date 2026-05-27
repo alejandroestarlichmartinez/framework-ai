@@ -5,22 +5,23 @@ import (
 	"os"
 	"strings"
 
-	"github.com/gentleman-programming/gentle-ai/internal/model"
-	"github.com/gentleman-programming/gentle-ai/internal/opencode"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/model"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/opencode"
 )
 
 // sddPhaseSet is the set of valid base SDD agent names that may appear in
-// opencode.json. It includes the sub-agent phases plus the gentle-orchestrator coordinator.
+// opencode.json. It includes the sub-agent phases plus the framework-orchestrator coordinator.
 var sddPhaseSet = buildSDDPhaseSet()
 
 func buildSDDPhaseSet() map[string]bool {
 	phases := opencode.SDDPhases()
-	set := make(map[string]bool, len(phases)+1)
+	set := make(map[string]bool, len(phases)+2)
 	for _, p := range phases {
 		set[p] = true
 	}
+	set["framework-orchestrator"] = true
+	// Backward-compatible read aliases for configs that have not been synced yet.
 	set["gentle-orchestrator"] = true
-	// Backward-compatible read alias for configs that have not been synced yet.
 	set["sdd-orchestrator"] = true
 	return set
 }
@@ -36,10 +37,10 @@ func ReadCurrentProfiles(settingsPath string) ([]model.Profile, error) {
 // at settingsPath and extracts the "model" field for each SDD phase agent.
 //
 // Only agents whose names match an SDD phase (from opencode.SDDPhases()) or
-// "gentle-orchestrator" are included. Legacy "sdd-orchestrator" entries are read as
-// "gentle-orchestrator" until the next sync migrates the config. Agents without a "model" field, or with a
-// malformed model value (not in "provider:model-id" format), are silently
-// skipped.
+// "framework-orchestrator" are included. Legacy "sdd-orchestrator" and "gentle-orchestrator"
+// entries are read as "framework-orchestrator" until the next sync migrates the config.
+// Agents without a "model" field, or with a malformed model value (not in
+// "provider:model-id" format), are silently skipped.
 //
 // Returns an empty map (no error) when the file does not exist, contains no
 // "agent" key, or has no matching phase agents with a valid model field.
@@ -96,9 +97,9 @@ func ReadCurrentModelAssignments(settingsPath string) (map[string]model.ModelAss
 			continue
 		}
 		assignmentKey := name
-		if name == "sdd-orchestrator" {
-			assignmentKey = "gentle-orchestrator"
-			if _, hasGentleOrchestrator := result[assignmentKey]; hasGentleOrchestrator {
+		if name == "sdd-orchestrator" || name == "gentle-orchestrator" {
+			assignmentKey = "framework-orchestrator"
+			if _, hasFrameworkOrchestrator := result[assignmentKey]; hasFrameworkOrchestrator {
 				continue
 			}
 		}

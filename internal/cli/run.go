@@ -12,26 +12,27 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gentleman-programming/gentle-ai/internal/agents"
-	"github.com/gentleman-programming/gentle-ai/internal/agents/kimi"
-	"github.com/gentleman-programming/gentle-ai/internal/assets"
-	"github.com/gentleman-programming/gentle-ai/internal/backup"
-	"github.com/gentleman-programming/gentle-ai/internal/components/engram"
-	"github.com/gentleman-programming/gentle-ai/internal/components/gga"
-	"github.com/gentleman-programming/gentle-ai/internal/components/mcp"
-	"github.com/gentleman-programming/gentle-ai/internal/components/opencodeplugin"
-	"github.com/gentleman-programming/gentle-ai/internal/components/permissions"
-	"github.com/gentleman-programming/gentle-ai/internal/components/persona"
-	"github.com/gentleman-programming/gentle-ai/internal/components/sdd"
-	"github.com/gentleman-programming/gentle-ai/internal/components/skills"
-	"github.com/gentleman-programming/gentle-ai/internal/components/theme"
-	"github.com/gentleman-programming/gentle-ai/internal/installcmd"
-	"github.com/gentleman-programming/gentle-ai/internal/model"
-	"github.com/gentleman-programming/gentle-ai/internal/pipeline"
-	"github.com/gentleman-programming/gentle-ai/internal/planner"
-	"github.com/gentleman-programming/gentle-ai/internal/state"
-	"github.com/gentleman-programming/gentle-ai/internal/system"
-	"github.com/gentleman-programming/gentle-ai/internal/verify"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/agents"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/agents/kimi"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/assets"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/backup"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/components/codegraph"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/components/engram"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/components/gga"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/components/mcp"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/components/opencodeplugin"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/components/permissions"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/components/persona"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/components/sdd"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/components/skills"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/components/theme"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/installcmd"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/model"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/pipeline"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/planner"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/state"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/system"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/verify"
 )
 
 type InstallResult struct {
@@ -61,9 +62,9 @@ var (
 	// Package-level var for testability — tests can replace this to avoid real HTTP calls.
 	engramDownloadFn = engram.DownloadLatestBinary
 
-	// AppVersion is the gentle-ai version that will be written into backup manifests.
+	// AppVersion is the framework-ai version that will be written into backup manifests.
 	// It is set by app.go before any CLI operation so that every backup created during
-	// an install or sync records which version of gentle-ai made it.
+	// an install or sync records which version of framework-ai made it.
 	// Default "dev" matches the ldflags default in app.Version.
 	AppVersion = "dev"
 )
@@ -255,7 +256,7 @@ type runtimeState struct {
 }
 
 func newInstallRuntime(homeDir string, selection model.Selection, resolved planner.ResolvedPlan, profile system.PlatformProfile) (*installRuntime, error) {
-	backupRoot := filepath.Join(homeDir, ".gentle-ai", "backups")
+	backupRoot := filepath.Join(homeDir, ".framework-ai", "backups")
 	if err := os.MkdirAll(backupRoot, 0o755); err != nil {
 		return nil, fmt.Errorf("create backup root directory %q: %w", backupRoot, err)
 	}
@@ -345,7 +346,7 @@ type prepareBackupStep struct {
 	source      backup.BackupSource
 	description string
 
-	// appVersion is the gentle-ai version that created this backup.
+	// appVersion is the framework-ai version that created this backup.
 	// When set, it is written into the manifest as CreatedByVersion.
 	appVersion string
 }
@@ -689,6 +690,22 @@ func (s componentApplyStep) Run() error {
 			return fmt.Errorf("install OpenCode Gentle Logo plugin: %w", err)
 		}
 		return nil
+	case model.ComponentCodeGraph:
+		if _, err := cmdLookPath("codegraph"); err != nil {
+			commands, err := codegraph.InstallCommand(s.profile)
+			if err != nil {
+				return fmt.Errorf("resolve install command for component %q: %w", s.component, err)
+			}
+			if err := runCommandSequence(commands); err != nil {
+				return err
+			}
+		}
+		for _, adapter := range adapters {
+			if _, err := codegraph.Inject(s.homeDir, s.workspaceDir, adapter); err != nil {
+				return fmt.Errorf("inject codegraph for %q: %w", adapter.Agent(), err)
+			}
+		}
+		return nil
 	default:
 		return fmt.Errorf("component %q is not supported in install runtime", s.component)
 	}
@@ -734,7 +751,7 @@ func windowsGoCandidates() []string {
 // BuildRealStagePlan creates a StagePlan with real backup, agent install, and component apply steps.
 // It is used by both the CLI and TUI paths.
 func BuildRealStagePlan(homeDir string, selection model.Selection, resolved planner.ResolvedPlan, profile system.PlatformProfile) (pipeline.StagePlan, error) {
-	backupRoot := filepath.Join(homeDir, ".gentle-ai", "backups")
+	backupRoot := filepath.Join(homeDir, ".framework-ai", "backups")
 	if err := os.MkdirAll(backupRoot, 0o755); err != nil {
 		return pipeline.StagePlan{}, fmt.Errorf("create backup root directory %q: %w", backupRoot, err)
 	}
@@ -1026,6 +1043,26 @@ func componentPathsWithWorkspace(homeDir, workspaceDir string, selection model.S
 				filepath.Join(homeDir, ".config", "opencode", "tui-plugins", "gentle-logo.tsx"),
 				filepath.Join(homeDir, ".config", "opencode", "tui.json"),
 			)
+		case model.ComponentCodeGraph:
+			switch adapter.MCPStrategy() {
+			case model.StrategySeparateMCPFiles:
+				paths = append(paths, adapter.MCPConfigPath(homeDir, "codegraph"))
+			case model.StrategyMergeIntoSettings:
+				if p := adapter.SettingsPath(homeDir); p != "" {
+					paths = append(paths, p)
+				}
+			case model.StrategyMCPConfigFile:
+				if p := adapter.MCPConfigPath(homeDir, "codegraph"); p != "" {
+					paths = append(paths, p)
+				}
+			case model.StrategyTOMLFile:
+				if p := adapter.MCPConfigPath(homeDir, "codegraph"); p != "" {
+					paths = append(paths, p)
+				}
+			}
+			if adapter.SystemPromptStrategy() == model.StrategyMarkdownSections {
+				paths = append(paths, adapter.SystemPromptFile(targetDir))
+			}
 		}
 	}
 

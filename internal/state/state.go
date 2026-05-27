@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 )
 
-const stateDir = ".gentle-ai"
+const stateDir = ".framework-ai"
 const stateFile = "state.json"
 
 // ModelAssignmentState is the JSON-serialisable form of a provider+model pair
@@ -26,7 +26,7 @@ type InstallState struct {
 
 	// ClaudeModelAssignments maps SDD phase names (e.g. "sdd-explore") to a
 	// Claude model alias ("opus", "sonnet", "haiku"). Persisted so that
-	// `gentle-ai sync` preserves the user's model choices instead of falling
+	// `framework-ai sync` preserves the user's model choices instead of falling
 	// back to the "balanced" preset every time.
 	ClaudeModelAssignments map[string]string `json:"claude_model_assignments,omitempty"`
 
@@ -39,7 +39,7 @@ type InstallState struct {
 	ModelAssignments map[string]ModelAssignmentState `json:"model_assignments,omitempty"`
 
 	// Persona records the persona the user installed ("gentleman", "neutral",
-	// "custom"). Persisted so that `gentle-ai sync` regenerates the same persona
+	// "custom"). Persisted so that `framework-ai sync` regenerates the same persona
 	// the user originally chose instead of defaulting to Gentleman every time.
 	// Empty for state files written before persona persistence was added —
 	// callers fall back to PersonaGentleman in that case.
@@ -66,7 +66,7 @@ func Read(homeDir string) (InstallState, error) {
 }
 
 // Write persists the full install state to disk under the given home directory.
-// It creates the .gentle-ai directory if it does not already exist.
+// It creates the .framework-ai directory if it does not already exist.
 func Write(homeDir string, s InstallState) error {
 	dir := filepath.Join(homeDir, stateDir)
 	if err := os.MkdirAll(dir, 0o755); err != nil {

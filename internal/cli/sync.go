@@ -10,20 +10,21 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gentleman-programming/gentle-ai/internal/agents"
-	"github.com/gentleman-programming/gentle-ai/internal/backup"
-	"github.com/gentleman-programming/gentle-ai/internal/components/engram"
-	"github.com/gentleman-programming/gentle-ai/internal/components/gga"
-	"github.com/gentleman-programming/gentle-ai/internal/components/mcp"
-	"github.com/gentleman-programming/gentle-ai/internal/components/permissions"
-	"github.com/gentleman-programming/gentle-ai/internal/components/persona"
-	"github.com/gentleman-programming/gentle-ai/internal/components/sdd"
-	"github.com/gentleman-programming/gentle-ai/internal/components/skills"
-	"github.com/gentleman-programming/gentle-ai/internal/components/theme"
-	"github.com/gentleman-programming/gentle-ai/internal/model"
-	"github.com/gentleman-programming/gentle-ai/internal/pipeline"
-	"github.com/gentleman-programming/gentle-ai/internal/state"
-	"github.com/gentleman-programming/gentle-ai/internal/verify"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/agents"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/backup"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/components/codegraph"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/components/engram"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/components/gga"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/components/mcp"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/components/permissions"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/components/persona"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/components/sdd"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/components/skills"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/components/theme"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/model"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/pipeline"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/state"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/verify"
 )
 
 // SyncFlags holds parsed CLI flags for the sync command.
@@ -270,7 +271,7 @@ func parseModelSpec(spec string) (model.ModelAssignment, error) {
 // Permissions and Theme can be opted-in via flags.
 //
 // Persona is included because its content lives between
-// <!-- gentle-ai:persona --> markers — that block is harness-managed and
+// <!-- framework-ai:persona --> markers — that block is harness-managed and
 // must propagate embedded-asset changes across versions. Content outside
 // the markers (user-authored sections) is preserved by InjectMarkdownSection.
 //
@@ -287,6 +288,7 @@ func BuildSyncSelection(flags SyncFlags, agentIDs []model.AgentID) model.Selecti
 		model.ComponentSDD,
 		model.ComponentEngram,
 		model.ComponentContext7,
+		model.ComponentCodeGraph,
 		model.ComponentGGA,
 		model.ComponentSkills,
 	}
@@ -327,7 +329,7 @@ func BuildSyncSelection(flags SyncFlags, agentIDs []model.AgentID) model.Selecti
 // DiscoverAgents returns the agent IDs to sync.
 //
 // Discovery order:
-//  1. Persisted state (~/.gentle-ai/state.json) — written at install time.
+//  1. Persisted state (~/.framework-ai/state.json) — written at install time.
 //     When present and non-empty, only the agents the user explicitly installed
 //     are returned. This prevents sync from injecting into every IDE config dir
 //     that happens to exist on the system (issue #107).
@@ -380,7 +382,7 @@ type syncRuntime struct {
 }
 
 func newSyncRuntime(homeDir string, selection model.Selection) (*syncRuntime, error) {
-	backupRoot := filepath.Join(homeDir, ".gentle-ai", "backups")
+	backupRoot := filepath.Join(homeDir, ".framework-ai", "backups")
 	if err := os.MkdirAll(backupRoot, 0o755); err != nil {
 		return nil, fmt.Errorf("create backup root directory %q: %w", backupRoot, err)
 	}
@@ -666,7 +668,7 @@ func (s componentSyncStep) Run() error {
 
 	case model.ComponentPersona:
 		// Sync regenerates the persona block between
-		// <!-- gentle-ai:persona --> markers and (when supported) refreshes
+		// <!-- framework-ai:persona --> markers and (when supported) refreshes
 		// the Gentleman output-style overlay. We deliberately skip the
 		// OpenCode/Kilocode agent definition in opencode.json — that JSON
 		// merge conflicts with SDD's writes to the same settings file and
@@ -687,6 +689,16 @@ func (s componentSyncStep) Run() error {
 			res, err := theme.Inject(s.homeDir, adapter)
 			if err != nil {
 				return fmt.Errorf("sync theme for %q: %w", adapter.Agent(), err)
+			}
+			s.countChanged(boolToInt(res.Changed))
+		}
+		return nil
+
+	case model.ComponentCodeGraph:
+		for _, adapter := range adapters {
+			res, err := codegraph.Inject(s.homeDir, s.workspaceDir, adapter)
+			if err != nil {
+				return fmt.Errorf("sync codegraph for %q: %w", adapter.Agent(), err)
 			}
 			s.countChanged(boolToInt(res.Changed))
 		}
@@ -868,7 +880,7 @@ func RenderSyncReport(result SyncResult) string {
 	var b strings.Builder
 
 	if result.NoOp {
-		fmt.Fprintln(&b, "gentle-ai sync — no managed sync actions needed")
+		fmt.Fprintln(&b, "framework-ai sync — no managed sync actions needed")
 		if len(result.Agents) == 0 {
 			fmt.Fprintln(&b, "No agents were discovered or specified. Nothing to sync.")
 		} else {
@@ -879,7 +891,7 @@ func RenderSyncReport(result SyncResult) string {
 	}
 
 	if result.DryRun {
-		fmt.Fprintln(&b, "gentle-ai sync — dry-run")
+		fmt.Fprintln(&b, "framework-ai sync — dry-run")
 		fmt.Fprintf(&b, "Agents: %s\n", joinAgentIDs(result.Agents))
 
 		compParts := make([]string, 0, len(result.Selection.Components))
@@ -894,7 +906,7 @@ func RenderSyncReport(result SyncResult) string {
 		return strings.TrimRight(b.String(), "\n")
 	}
 
-	fmt.Fprintln(&b, "gentle-ai sync — managed sync executed")
+	fmt.Fprintln(&b, "framework-ai sync — managed sync executed")
 	fmt.Fprintf(&b, "Agents synced: %s\n", joinAgentIDs(result.Agents))
 
 	compParts := make([]string, 0, len(result.Selection.Components))

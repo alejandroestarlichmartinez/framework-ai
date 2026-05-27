@@ -8,10 +8,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gentleman-programming/gentle-ai/internal/agents"
-	"github.com/gentleman-programming/gentle-ai/internal/backup"
-	"github.com/gentleman-programming/gentle-ai/internal/model"
-	"github.com/gentleman-programming/gentle-ai/internal/state"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/agents"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/backup"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/model"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/state"
 )
 
 // ─── Phase 1: ParseSyncFlags ───────────────────────────────────────────────
@@ -196,7 +196,7 @@ func TestBuildSyncSelectionDefaultScopeIncludesManagedComponents(t *testing.T) {
 	sel := BuildSyncSelection(flags, agents)
 
 	// Default sync must include: SDD, Engram, Context7, GGA, Skills, Persona.
-	// Persona is included because the content between <!-- gentle-ai:persona -->
+	// Persona is included because the content between <!-- framework-ai:persona -->
 	// markers is harness-managed; sync must propagate embedded-asset changes to
 	// users who already have a persona installed. Content outside the markers
 	// is preserved by InjectMarkdownSection.
@@ -498,7 +498,7 @@ func TestComponentSyncStepRunsPersonaInjectForSync(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ReadFile AGENTS.md: %v", err)
 	}
-	if !strings.Contains(string(body), "<!-- gentle-ai:persona -->") {
+	if !strings.Contains(string(body), "<!-- framework-ai:persona -->") {
 		t.Errorf("AGENTS.md missing persona open marker after sync; got:\n%s", string(body))
 	}
 
@@ -915,7 +915,7 @@ func TestRenderSyncReportIncludesManagedActions(t *testing.T) {
 
 // TestRunSyncExcludesUnmanagedLookalikeFile verifies the spec scenario:
 // "User modified an unmanaged file that resembles a managed target —
-// gentle-ai sync excludes it from the plan and does not adopt it."
+// framework-ai sync excludes it from the plan and does not adopt it."
 //
 // We create a file with the same NAME as a managed target but in a directory
 // that is NOT part of the managed inventory (simulating an unmanaged lookalike).
@@ -931,7 +931,7 @@ func TestRunSyncExcludesUnmanagedLookalikeFile(t *testing.T) {
 		t.Fatalf("MkdirAll() error = %v", err)
 	}
 	lookalikePath := filepath.Join(lookalikeDir, "AGENTS.md")
-	const lookalikeContent = "# My project AGENTS.md — NOT managed by gentle-ai"
+	const lookalikeContent = "# My project AGENTS.md — NOT managed by framework-ai"
 	if err := os.WriteFile(lookalikePath, []byte(lookalikeContent), 0o644); err != nil {
 		t.Fatalf("WriteFile() lookalike error = %v", err)
 	}
@@ -1382,20 +1382,30 @@ func TestRunSyncExternalSingleActiveSkipsDetectAndPreservesOrchestratorPrompt(t 
 	}
 	settingsText := string(settingsData)
 
-	if !strings.Contains(settingsText, "EXTERNAL-RUNTIME-ORCHESTRATOR-PROMPT") {
+	// After the orchestrator prompt file change, the prompt is stored in a separate
+	// file and referenced via {file:...} in settings.json. Verify the prompt file
+	// contains the preserved custom prompt.
+	orchestratorPromptPath := filepath.Join(home, ".config", "opencode", "agents", "framework-orchestrator.md")
+	orchestratorPromptData, err := os.ReadFile(orchestratorPromptPath)
+	if err != nil {
+		t.Fatalf("ReadFile(orchestrator prompt) error = %v", err)
+	}
+	orchestratorPromptText := string(orchestratorPromptData)
+
+	if !strings.Contains(orchestratorPromptText, "EXTERNAL-RUNTIME-ORCHESTRATOR-PROMPT") {
 		t.Fatalf("expected external runtime orchestrator prompt marker to be preserved in external-single-active mode")
 	}
-	if strings.Contains(settingsText, "Bind this to the dedicated `sdd-orchestrator` agent only.") {
+	if strings.Contains(orchestratorPromptText, "Bind this to the dedicated `sdd-orchestrator` agent only.") {
 		t.Fatalf("external-single-active sync preserved stale sdd-orchestrator binding text")
 	}
-	if strings.Contains(settingsText, "agent.sdd-orchestrator.model") {
+	if strings.Contains(orchestratorPromptText, "agent.sdd-orchestrator.model") {
 		t.Fatalf("external-single-active sync preserved stale sdd-orchestrator model assignment key")
 	}
-	if !strings.Contains(settingsText, "Bind this to the dedicated `gentle-orchestrator` agent only.") {
-		t.Fatalf("external-single-active sync did not migrate binding text to gentle-orchestrator")
+	if !strings.Contains(orchestratorPromptText, "Bind this to the dedicated `framework-orchestrator` agent only.") {
+		t.Fatalf("external-single-active sync did not migrate binding text to framework-orchestrator")
 	}
-	if !strings.Contains(settingsText, "agent.gentle-orchestrator.model") {
-		t.Fatalf("external-single-active sync did not migrate model assignment key to gentle-orchestrator")
+	if !strings.Contains(orchestratorPromptText, "agent.framework-orchestrator.model") {
+		t.Fatalf("external-single-active sync did not migrate model assignment key to framework-orchestrator")
 	}
 	if strings.Contains(settingsText, "\"sdd-onboard-cheap\"") {
 		t.Fatalf("external-single-active should not auto-detect/regenerate suffixed profiles")
@@ -2246,12 +2256,12 @@ func TestRunSyncRegeneratesPersonaBlockBetweenMarkers(t *testing.T) {
 	if err := os.MkdirAll(filepath.Join(home, ".claude"), 0o755); err != nil {
 		t.Fatalf("MkdirAll: %v", err)
 	}
-	// Write a stale managed persona block — what an older version of gentle-ai
+	// Write a stale managed persona block — what an older version of framework-ai
 	// would have emitted. The sync must replace this with the v1.26 directive.
 	stalePersona := "# pre-existing notes by user\n\n" +
-		"<!-- gentle-ai:persona -->\n" +
+		"<!-- framework-ai:persona -->\n" +
 		"## Skills (Auto-load based on context)\n\nstale 2-row table here.\n" +
-		"<!-- /gentle-ai:persona -->\n"
+		"<!-- /framework-ai:persona -->\n"
 	claudeMD := filepath.Join(home, ".claude", "CLAUDE.md")
 	if err := os.WriteFile(claudeMD, []byte(stalePersona), 0o644); err != nil {
 		t.Fatalf("WriteFile: %v", err)

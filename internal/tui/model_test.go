@@ -9,16 +9,16 @@ import (
 	"testing"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/gentleman-programming/gentle-ai/internal/backup"
-	componentuninstall "github.com/gentleman-programming/gentle-ai/internal/components/uninstall"
-	"github.com/gentleman-programming/gentle-ai/internal/model"
-	"github.com/gentleman-programming/gentle-ai/internal/opencode"
-	"github.com/gentleman-programming/gentle-ai/internal/pipeline"
-	"github.com/gentleman-programming/gentle-ai/internal/planner"
-	"github.com/gentleman-programming/gentle-ai/internal/system"
-	"github.com/gentleman-programming/gentle-ai/internal/tui/screens"
-	"github.com/gentleman-programming/gentle-ai/internal/update"
-	"github.com/gentleman-programming/gentle-ai/internal/update/upgrade"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/backup"
+	componentuninstall "github.com/alejandroestarlichmartinez/framework-ai/internal/components/uninstall"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/model"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/opencode"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/pipeline"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/planner"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/system"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/tui/screens"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/update"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/update/upgrade"
 )
 
 func TestNavigationWelcomeToDetection(t *testing.T) {
@@ -313,7 +313,7 @@ func TestPiCombinedWithOtherAgentsTUIInstallKeepsAllAgentsInPlan(t *testing.T) {
 		t.Fatalf("after persona screen = %v, want %v", state.Screen, ScreenPreset)
 	}
 
-	state.Cursor = 2 // Minimal preset: Engram only, no SDD/model detours.
+	state.Cursor = 3 // Minimal preset: Engram only, no SDD/model detours.
 	updated, _ = state.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	state = updated.(Model)
 	if state.Screen != ScreenOpenCodePlugins {
@@ -1587,7 +1587,7 @@ func TestStartUninstall_FullRemoveHomebrewManagedBinaryAddsManualAction(t *testi
 		return componentuninstall.Result{}, nil
 	}
 
-	restoreExec := setOSExecutableForTest("/opt/homebrew/bin/gentle-ai", nil)
+	restoreExec := setOSExecutableForTest("/opt/homebrew/bin/framework-ai", nil)
 	defer restoreExec()
 
 	removeCalled := false
@@ -1607,7 +1607,7 @@ func TestStartUninstall_FullRemoveHomebrewManagedBinaryAddsManualAction(t *testi
 	if len(msg.Result.ManualActions) == 0 {
 		t.Fatal("ManualActions should include Homebrew uninstall guidance")
 	}
-	if !strings.Contains(msg.Result.ManualActions[0], "brew uninstall gentle-ai") {
+	if !strings.Contains(msg.Result.ManualActions[0], "brew uninstall framework-ai") {
 		t.Fatalf("manual action = %q, want brew uninstall guidance", msg.Result.ManualActions[0])
 	}
 }
@@ -1621,7 +1621,7 @@ func TestStartUninstall_FullRemoveNonBrewRemovesBinary(t *testing.T) {
 		return componentuninstall.Result{}, nil
 	}
 
-	restoreExec := setOSExecutableForTest("/tmp/gentle-ai", nil)
+	restoreExec := setOSExecutableForTest("/tmp/framework-ai", nil)
 	defer restoreExec()
 
 	removedPath := ""
@@ -1635,8 +1635,8 @@ func TestStartUninstall_FullRemoveNonBrewRemovesBinary(t *testing.T) {
 	if msg.Err != nil {
 		t.Fatalf("UninstallDoneMsg.Err = %v, want nil", msg.Err)
 	}
-	if removedPath != "/tmp/gentle-ai" {
-		t.Fatalf("os.Remove path = %q, want %q", removedPath, "/tmp/gentle-ai")
+	if removedPath != "/tmp/framework-ai" {
+		t.Fatalf("os.Remove path = %q, want %q", removedPath, "/tmp/framework-ai")
 	}
 }
 
@@ -3484,7 +3484,7 @@ func TestNoWrapAroundUpOnBackupScreen(t *testing.T) {
 func TestModelConfigOpenCodePrePopulatesAssignments(t *testing.T) {
 	// Pre-existing assignments that should be read from settings
 	preExisting := map[string]model.ModelAssignment{
-		"gentle-orchestrator": {ProviderID: "anthropic", ModelID: "claude-sonnet-4-20250514"},
+		"framework-orchestrator": {ProviderID: "anthropic", ModelID: "claude-sonnet-4-20250514"},
 		"sdd-apply":           {ProviderID: "openai", ModelID: "gpt-4o"},
 	}
 
@@ -3518,10 +3518,10 @@ func TestModelConfigOpenCodePrePopulatesAssignments(t *testing.T) {
 	if state.Selection.ModelAssignments == nil {
 		t.Fatal("ModelAssignments should be pre-populated, got nil")
 	}
-	got := state.Selection.ModelAssignments["gentle-orchestrator"]
-	want := preExisting["gentle-orchestrator"]
+	got := state.Selection.ModelAssignments["framework-orchestrator"]
+	want := preExisting["framework-orchestrator"]
 	if got != want {
-		t.Errorf("gentle-orchestrator assignment = %+v, want %+v", got, want)
+		t.Errorf("framework-orchestrator assignment = %+v, want %+v", got, want)
 	}
 	got2 := state.Selection.ModelAssignments["sdd-apply"]
 	want2 := preExisting["sdd-apply"]
@@ -3539,7 +3539,7 @@ func TestModelConfigOpenCodeDoesNotOverwriteExistingSessionAssignments(t *testin
 	orig := readCurrentAssignmentsFn
 	readCurrentAssignmentsFn = func(_ string) (map[string]model.ModelAssignment, error) {
 		return map[string]model.ModelAssignment{
-			"gentle-orchestrator": {ProviderID: "anthropic", ModelID: "claude-sonnet-4-20250514"},
+			"framework-orchestrator": {ProviderID: "anthropic", ModelID: "claude-sonnet-4-20250514"},
 		}, nil
 	}
 	t.Cleanup(func() { readCurrentAssignmentsFn = orig })
@@ -3553,14 +3553,14 @@ func TestModelConfigOpenCodeDoesNotOverwriteExistingSessionAssignments(t *testin
 	m.Cursor = 1
 	// Pre-populate Selection.ModelAssignments in the current session
 	m.Selection.ModelAssignments = map[string]model.ModelAssignment{
-		"gentle-orchestrator": sessionAssignment,
+		"framework-orchestrator": sessionAssignment,
 	}
 
 	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	state := updated.(Model)
 
 	// The session assignment must be preserved, not overwritten by file contents
-	got := state.Selection.ModelAssignments["gentle-orchestrator"]
+	got := state.Selection.ModelAssignments["framework-orchestrator"]
 	if got != sessionAssignment {
 		t.Errorf("session assignment overwritten: got %+v, want %+v", got, sessionAssignment)
 	}
@@ -3781,5 +3781,53 @@ func TestPinErrClearedOnScreenReentry(t *testing.T) {
 	// PinErr must be cleared on re-entry.
 	if afterReturn.PinErr != nil {
 		t.Fatalf("PinErr should be nil after returning to ScreenBackups, got: %v", afterReturn.PinErr)
+	}
+}
+
+func TestPresetFullRickSetsPersonaToRick(t *testing.T) {
+	m := NewModel(system.DetectionResult{}, "dev")
+	m.Selection.Agents = []model.AgentID{model.AgentClaudeCode}
+	m.setScreen(ScreenPreset)
+	m.Cursor = 1 // FullRick preset
+
+	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	state := updated.(Model)
+
+	if state.Selection.Preset != model.PresetFullRick {
+		t.Fatalf("want preset %q, got %q", model.PresetFullRick, state.Selection.Preset)
+	}
+	if state.Selection.Persona != model.PersonaRickSanchez {
+		t.Fatalf("want persona %q, got %q", model.PersonaRickSanchez, state.Selection.Persona)
+	}
+}
+
+func TestPresetFullRickDoesNotOverrideExplicitPersona(t *testing.T) {
+	m := NewModel(system.DetectionResult{}, "dev")
+	m.Selection.Agents = []model.AgentID{model.AgentClaudeCode}
+	m.Selection.Persona = model.PersonaNeutral
+	m.setScreen(ScreenPreset)
+	m.Cursor = 1 // FullRick preset
+
+	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	state := updated.(Model)
+
+	if state.Selection.Preset != model.PresetFullRick {
+		t.Fatalf("want preset %q, got %q", model.PresetFullRick, state.Selection.Preset)
+	}
+	if state.Selection.Persona != model.PersonaNeutral {
+		t.Fatalf("want persona %q, got %q", model.PersonaNeutral, state.Selection.Persona)
+	}
+}
+
+func TestTUIComponentsForPresetFullRickMatchesFullGentleman(t *testing.T) {
+	rick := componentsForPreset(model.PresetFullRick)
+	gentleman := componentsForPreset(model.PresetFullGentleman)
+	if len(rick) != len(gentleman) {
+		t.Fatalf("PresetFullRick has %d components, PresetFullGentleman has %d", len(rick), len(gentleman))
+	}
+	for i := range gentleman {
+		if gentleman[i] != rick[i] {
+			t.Fatalf("component mismatch at index %d: FullGentleman=%q, FullRick=%q", i, gentleman[i], rick[i])
+		}
 	}
 }

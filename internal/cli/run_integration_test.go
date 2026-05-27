@@ -11,13 +11,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gentleman-programming/gentle-ai/internal/agents/kimi"
-	"github.com/gentleman-programming/gentle-ai/internal/agents/opencode"
-	"github.com/gentleman-programming/gentle-ai/internal/backup"
-	"github.com/gentleman-programming/gentle-ai/internal/installcmd"
-	"github.com/gentleman-programming/gentle-ai/internal/model"
-	"github.com/gentleman-programming/gentle-ai/internal/system"
-	"github.com/gentleman-programming/gentle-ai/internal/versions"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/agents/kimi"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/agents/opencode"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/backup"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/installcmd"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/model"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/system"
+	"github.com/alejandroestarlichmartinez/framework-ai/internal/versions"
 )
 
 // missingBinaryLookPath simulates all installable binaries (engram, gga) as
@@ -1702,10 +1702,10 @@ func TestRunInstallUpgradeIdempotency(t *testing.T) {
 			orchestratorCount, content)
 	}
 
-	// 3. No duplicate gentle-ai marker blocks — each section's open marker
+	// 3. No duplicate framework-ai marker blocks — each section's open marker
 	// must appear exactly once.
-	for _, sectionID := range []string{"sdd-orchestrator", "engram-protocol"} {
-		openMarker := "<!-- gentle-ai:" + sectionID + " -->"
+	for _, sectionID := range []string{"framework-orchestrator", "engram-protocol"} {
+		openMarker := "<!-- framework-ai:" + sectionID + " -->"
 		count := strings.Count(content, openMarker)
 		if count != 1 {
 			t.Errorf("CLAUDE.md contains %d occurrences of marker %q, want exactly 1:\n%s",
@@ -2006,26 +2006,26 @@ func TestOpenCodePersonaBeforeSDDPreservesAllSections(t *testing.T) {
 	// the engram section. We verify persona + engram coexist.
 
 	// Engram protocol section must be present
-	if !strings.Contains(text, "<!-- gentle-ai:engram-protocol -->") {
+	if !strings.Contains(text, "<!-- framework-ai:engram-protocol -->") {
 		t.Error("AGENTS.md missing engram-protocol open marker (issue #121 regression: persona may have overwritten engram section)")
 	}
-	if !strings.Contains(text, "<!-- /gentle-ai:engram-protocol -->") {
+	if !strings.Contains(text, "<!-- /framework-ai:engram-protocol -->") {
 		t.Error("AGENTS.md missing engram-protocol close marker")
 	}
 
 	// Engram section must not be duplicated
-	marker := "<!-- gentle-ai:engram-protocol -->"
+	marker := "<!-- framework-ai:engram-protocol -->"
 	if count := strings.Count(text, marker); count != 1 {
 		t.Errorf("AGENTS.md contains %d occurrences of %q, want exactly 1 (no duplicates)", count, marker)
 	}
 
 	// AGENTS.md must NOT have sdd-orchestrator markers — OpenCode uses opencode.json overlay
-	if strings.Contains(text, "<!-- gentle-ai:sdd-orchestrator -->") {
+	if strings.Contains(text, "<!-- framework-ai:sdd-orchestrator -->") {
 		t.Error("AGENTS.md should NOT have sdd-orchestrator marker — OpenCode uses opencode.json agent overlay")
 	}
 
 	// SDD orchestrator for OpenCode lives in opencode.json agent overlay under
-	// the canonical gentle-orchestrator key. Legacy sdd-orchestrator should be
+	// the canonical framework-orchestrator key. Legacy sdd-orchestrator should be
 	// migrated away during injection.
 	opencodeJSON := filepath.Join(home, ".config", "opencode", "opencode.json")
 	jsonContent, err := os.ReadFile(opencodeJSON)
@@ -2033,8 +2033,8 @@ func TestOpenCodePersonaBeforeSDDPreservesAllSections(t *testing.T) {
 		t.Fatalf("ReadFile(opencode.json) error = %v", err)
 	}
 	jsonText := string(jsonContent)
-	if !strings.Contains(jsonText, "gentle-orchestrator") {
-		t.Error("opencode.json missing gentle-orchestrator agent entry (SDD not injected)")
+	if !strings.Contains(jsonText, "framework-orchestrator") {
+		t.Error("opencode.json missing framework-orchestrator agent entry (SDD not injected)")
 	}
 	if strings.Contains(jsonText, `"sdd-orchestrator"`) {
 		t.Error("opencode.json should not contain legacy sdd-orchestrator agent entry")
